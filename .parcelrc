@@ -4,5 +4,9 @@
 		"*.{ts,tsx}": [
 			"@parcel/transformer-typescript-tsc"
 		]
-	}
+	},
+	"reporters": [
+		"@parcel/reporter-dev-server",
+		"parcel-reporter-clean-dist"
+	]
 }
