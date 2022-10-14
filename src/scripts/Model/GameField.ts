@@ -8,7 +8,6 @@ export default class GameField {
 
 	#field: DoubleArray<Cell>;
 	#centerOffset: number;
-	#size: number;
 
 	public get field() {
 		return this.#field;
@@ -18,27 +17,18 @@ export default class GameField {
 	 * Когда размер поля увеличивается, то создается проблема -
 	 * клетки из предыдущего состояния смещаются на один вправо и вниз.
 	 * Поэтому нужно сохранять смещение для сохранения правильных
-	 * позиций при выполнении команд. В моей реализации смещение идет
-	 * от центра изначального поля.
+	 * позиций при передаче позиций в команду. В моей реализации
+	 * смещение идет от центра изначального поля.
 	 */
 	public get centerOffset() {
 		return this.#centerOffset;
 	}
 
 	public get size() {
-		return this.#size;
-	}
-
-	public get width() {
 		return this.#field.width;
 	}
 
-	public get height() {
-		return this.#field.height;
-	}
-
 	constructor(initialSize = 3) {
-		this.#size = initialSize;
 		this.#field = new DoubleArray<Cell>(initialSize, initialSize, null);
 		this.#centerOffset = -initialSize >> 1;
 	}
