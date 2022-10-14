@@ -75,7 +75,7 @@ export default class DoubleArray<T> {
 	}
 
 	/**
-	 * Returns -1 if postiion is outside of the bounds of the field
+	 * Возвращает -1 если позиция была за гранами массива
 	 */
 	public convertPositionToIndex(position: IVec2): number {
 		if (this.isInvalidPosition(position))
@@ -85,7 +85,7 @@ export default class DoubleArray<T> {
 	}
 
 	/**
-	 * Returns null if index is outside of the bounds of the array
+	 * Возвращает null если индекс был за границей массива
 	 */
 	public convertIndexToPosition(index: number): IVec2 | null {
 		if (index < 0 || index > this.#array.length)
@@ -109,12 +109,22 @@ export default class DoubleArray<T> {
 	}
 
 	/**
-	 * Returns copy of this DoubleArray
+	 * Возвращает новый двойной массив с таким же содержимым
 	 * 
-	 * Note: This assigns objects/arrays by reference instead of by value
+	 * Прим.: не выполняет глубокое копирование
 	 * 
 	 */
-	public copy(): DoubleArray<T> {
+	public getCopy(): DoubleArray<T> {
 		return new DoubleArray<T>(this.width, this.height, this.defaultValue, this.#array);
+	}
+
+	/**
+	 * Возвращает копию в виде одномерного массива
+	 * 
+	 * Прим.: не выполняет глубокое копирование
+	 * 
+	 */
+	public getRawCopy(): (T | undefined)[] {
+		return this.#array.slice();
 	}
 }
