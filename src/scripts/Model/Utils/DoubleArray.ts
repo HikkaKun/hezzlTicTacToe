@@ -101,11 +101,11 @@ export default class DoubleArray<T> {
 		return this.#array[this.convertPositionToIndex(position)];
 	}
 
-	public setAt(position: IVec2, item: T | undefined): void {
+	public setAt(position: IVec2, value: T | undefined): void {
 		if (this.isInvalidPosition(position))
 			return;
 
-		this.#array[this.convertPositionToIndex(position)] = item;
+		this.#array[this.convertPositionToIndex(position)] = value;
 	}
 
 	/**

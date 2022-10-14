@@ -57,8 +57,12 @@ export default class GameField {
 		this.#centerOffset--;
 	}
 
-	public setCellAt(position: IVec2, cell: Cell): void {
-		this.#field.setAt(position, cell);
+	public isInvalidPosition(position: IVec2): boolean {
+		return this.#field.isInvalidPosition(position);
+	}
+
+	public setCellAt(position: IVec2, value: Cell): void {
+		this.#field.setAt(position, value);
 	}
 
 	public getCellAt(position: IVec2): Cell | undefined {
