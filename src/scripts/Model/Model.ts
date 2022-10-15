@@ -7,20 +7,23 @@ export default interface ModelConfig {
 	lineLengthToWin?: number;
 }
 
-export default class Model extends EventTarget {
-
+export default class Model {
 	protected _field: DoubleArray<unknown>;
 	protected _lineLengthToWin: number;
+	protected _eventTarget: EventTarget;
+
+	public get eventEmitter() {
+		return this._eventTarget;
+	}
 
 	public get size() {
 		return this._field.width;
 	}
 
 	constructor(config?: ModelConfig) {
-		super();
-
 		this._field = new DoubleArray<number>(config?.initialSize ?? 3, config?.initialSize ?? 3);
 		this._lineLengthToWin = config?.lineLengthToWin ?? 3;
+		this._eventTarget = new EventTarget();
 	}
 
 	protected _increaseFieldSize(): void {
@@ -96,12 +99,24 @@ export default class Model extends EventTarget {
 		return false;
 	}
 
-	public sendMessage<T extends ModelEvent>(event: T, data: MessageData[T]): void {
-		this.dispatchEvent(new CustomEvent(event, { detail: data }));
+	protected _sendMessage<T extends ModelEvent>(event: T, data: MessageData[T]): void {
+		this._eventTarget.dispatchEvent(new CustomEvent(event, { detail: data }));
+	}
+
+	public on(event: string, callback: EventListenerOrEventListenerObject) {
+		this._eventTarget.addEventListener(event, callback);
+	}
+
+	public off(event: string, callback: EventListenerOrEventListenerObject) {
+		this._eventTarget.removeEventListener(event, callback);
+	}
+
+	public sendWinMessage(winPlayerId: string): void {
+		this._sendMessage(ModelEvent.Win, { winPlayerId });
 	}
 
 	public init(): void {
-
+		this._sendMessage(ModelEvent.Init, { size: this.size });
 	}
 
 	public setCellAt(position: IVec2, value: unknown): boolean {
