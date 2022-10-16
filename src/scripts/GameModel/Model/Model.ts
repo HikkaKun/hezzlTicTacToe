@@ -1,8 +1,9 @@
-import DoubleArray from '../Utils/DoubleArray';
-import { IVec2 } from '../Utils/IVec2';
+import DoubleArray from '../../Utils/DoubleArray';
+import { IVec2 } from '../../Utils/IVec2';
+import IView from '../View/IView';
 import { MessageData, ModelEvent } from './ModelEvent';
 
-export default interface ModelConfig {
+export interface ModelConfig {
 	initialSize?: number;
 	lineLengthToWin?: number;
 }
@@ -109,6 +110,34 @@ export default class Model {
 
 	public off(event: string, callback: EventListenerOrEventListenerObject) {
 		this._eventTarget.removeEventListener(event, callback);
+	}
+
+	public subscribeView(view: IView): void {
+		const subscribeOnEvent = (event: ModelEvent): void =>
+			this.eventEmitter.addEventListener(event, (event) => this.onEvent(view, <CustomEvent>event), { signal: view.abortController.signal });
+
+		subscribeOnEvent(ModelEvent.Init);
+		subscribeOnEvent(ModelEvent.UpdateCell);
+		subscribeOnEvent(ModelEvent.IncreaseField);
+		subscribeOnEvent(ModelEvent.Win);
+	}
+
+	public onEvent(view: IView, { type, detail: data }: CustomEvent): void {
+		switch (type) {
+			case ModelEvent.Init:
+				view.onInit((<MessageData[ModelEvent.Init]>data).size);
+				break;
+			case ModelEvent.UpdateCell:
+				const { position, value } = data as MessageData[ModelEvent.UpdateCell];
+				view.onUpdateCell(position, value);
+				break;
+			case ModelEvent.IncreaseField:
+				view.onIncreaseField();
+				break;
+			case ModelEvent.Win:
+				view.onWin((<MessageData[ModelEvent.Win]>data).winPlayerId)
+				break;
+		}
 	}
 
 	public sendWinMessage(winPlayerId: string): void {

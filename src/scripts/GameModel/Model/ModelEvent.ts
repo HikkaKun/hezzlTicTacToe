@@ -1,4 +1,4 @@
-import { IVec2 } from '../Utils/IVec2';
+import { IVec2 } from '../../Utils/IVec2';
 
 export enum ModelEvent {
 	Init = "init",

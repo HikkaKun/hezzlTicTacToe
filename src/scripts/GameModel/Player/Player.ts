@@ -1,5 +1,5 @@
 import Controller from '../Controller/Controller';
-import { IVec2 } from '../Utils/IVec2';
+import { IVec2 } from '../../Utils/IVec2';
 
 export default class Player {
 	protected _controller: Controller;

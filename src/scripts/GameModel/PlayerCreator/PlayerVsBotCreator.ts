@@ -5,6 +5,6 @@ import PlayerCreator from './PlayerCreator';
 
 export default class PlayerVsBotCreator extends PlayerCreator {
 	public createPlayers(controller: Controller): [Player, Player] {
-		return [new Player(this.getRandomId(), controller), new BotPlayer(this.getRandomId(), controller)];
+		return [new Player('x', controller), new BotPlayer('o', controller)];
 	}
 }

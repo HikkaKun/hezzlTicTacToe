@@ -1,12 +1,20 @@
 export default class Button extends Phaser.GameObjects.Container {
-	public image!: Phaser.GameObjects.Image;
-	public text!: Phaser.GameObjects.Text;
-	public callback!: () => void;
+	public image?: Phaser.GameObjects.Image;
+	public text?: Phaser.GameObjects.Text;
+	public callback?: () => void;
 
 	protected _tween?: Phaser.Tweens.Tween;
 
 	constructor(scene: Phaser.Scene, x: number, y: number) {
 		super(scene, x, y);
+	}
+
+	protected _stopTween(): void {
+		this._tween && this._tween.stop();
+	}
+
+	public get isInteractive() {
+		return this.image?.input.enabled ? true : false;
 	}
 
 	public init(imageKey: string | Phaser.Textures.Texture, callback: () => void, textString?: string): void {
@@ -16,14 +24,11 @@ export default class Button extends Phaser.GameObjects.Container {
 		this.image = image;
 		this.callback = callback;
 
-		this.image.setInteractive()
-			.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => this.image.setTint(0xDDDDDD))
-			.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => this.image.clearTint())
-			.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.click());
+		this.toggleInteractive(true);
 
 		if (!textString) return;
 
-		const text = this.scene.add.text(0, 0, textString, { fontFamily: 'monogram' });
+		const text = this.scene.add.text(0, 0, textString, { fontFamily: 'monogram', fontSize: "32px", });
 		this.add(text);
 		this.text = text;
 
@@ -31,8 +36,24 @@ export default class Button extends Phaser.GameObjects.Container {
 		text.setColor("0x000000");
 	}
 
-	public click() {
-		this._tween && this._tween.stop();
+	public toggleInteractive(isOn: boolean): void {
+		if (!this.image) return;
+
+		const image = this.image;
+		if (isOn) {
+			image.clearTint();
+			image.setInteractive()
+				.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => image.setTint(0xDDDDDD))
+				.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => image.clearTint())
+				.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.click());
+		} else {
+			image.removeInteractive();
+			image.setTint(0xAAAAAA);
+		}
+	}
+
+	public click(): void {
+		this._stopTween();
 
 		this.scale = 0.9;
 		this._tween = this.scene.tweens.add({
