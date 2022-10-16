@@ -1,7 +1,7 @@
 import { MessageData, ModelEvent } from '../Model/ModelEvent';
 import { IVec2 } from '../Utils/IVec2';
 
-export default class View {
+export default abstract class View {
 	protected _abortController: AbortController;
 
 	constructor() {
