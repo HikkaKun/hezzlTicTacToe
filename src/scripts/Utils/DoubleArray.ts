@@ -57,4 +57,23 @@ export default class DoubleArray<T> {
 	public getAt(position: IVec2): (T | undefined) {
 		return this._array[position.y][position.x];
 	}
+
+	public getCopy(): DoubleArray<T> {
+		const newArr = new DoubleArray<T>(this.width, this.height);
+
+		this.forEach((value, position) => {
+			newArr.setAt(position, value);
+		});
+
+		return newArr;
+	}
+
+	public forEach(callback: (value: T | undefined, position: IVec2) => unknown): void {
+		for (let x = 0; x < this.width; x++) {
+			for (let y = 0; y < this.height; y++) {
+				const position = { x, y };
+				callback(this.getAt(position), position);
+			}
+		}
+	}
 }

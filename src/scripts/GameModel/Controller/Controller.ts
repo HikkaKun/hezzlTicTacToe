@@ -1,5 +1,6 @@
 import Model, { PlayerId } from '../Model/Model';
 import { IVec2 } from '../../Utils/IVec2';
+import DoubleArray from '../../Utils/DoubleArray';
 
 export default class Controller {
 	protected readonly _model: Model;
@@ -54,5 +55,9 @@ export default class Controller {
 
 	public getPlayerIndex(): number {
 		return this._currentPlayerIndex;
+	}
+
+	public getFieldData(): DoubleArray<PlayerId> {
+		return this._model.getFieldData();
 	}
 }

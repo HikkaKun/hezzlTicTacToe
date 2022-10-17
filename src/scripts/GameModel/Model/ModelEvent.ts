@@ -1,4 +1,6 @@
+import DoubleArray from '../../Utils/DoubleArray';
 import { IVec2 } from '../../Utils/IVec2';
+import { PlayerId } from './Model';
 
 export enum ModelEvent {
 	Init = "init",
@@ -8,8 +10,8 @@ export enum ModelEvent {
 }
 
 export type MessageData = {
-	[ModelEvent.Init]: { size: number },
-	[ModelEvent.UpdateCell]: { position: IVec2, value: unknown },
+	[ModelEvent.Init]: { size: number, array: DoubleArray<PlayerId> },
+	[ModelEvent.UpdateCell]: { position: IVec2, value: PlayerId },
 	[ModelEvent.IncreaseField]: undefined,
-	[ModelEvent.Win]: { winPlayerId: string },
+	[ModelEvent.Win]: { winPlayerId: string, winLine: IVec2[] },
 }

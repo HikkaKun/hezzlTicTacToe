@@ -1,12 +1,13 @@
 import { IVec2 } from '../../Utils/IVec2';
+import { MessageData, ModelEvent } from '../Model/ModelEvent';
 
 export default interface IView {
 	abortController: AbortController;
 
 	unsubscribe(): void;
 
-	onInit(size: number): void;
-	onUpdateCell(position: IVec2, value: unknown): void;
-	onIncreaseField(): void;
-	onWin(winPlayerId: string): void;
+	onInit(data: MessageData[ModelEvent.Init]): void;
+	onUpdateCell(data: MessageData[ModelEvent.UpdateCell]): void;
+	onIncreaseField(data?: MessageData[ModelEvent.IncreaseField]): void;
+	onWin(data: MessageData[ModelEvent.Win]): void;
 }

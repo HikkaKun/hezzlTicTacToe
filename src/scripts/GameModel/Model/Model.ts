@@ -20,6 +20,7 @@ export default class Model {
 	protected _eventTarget: EventTarget;
 	protected _filledCells: number;
 	protected _increasePercent: number;
+	protected _winLine: IVec2[] = [];
 
 	public get needToIncrease() {
 		return this._filledCells / (this.size * this.size) >= this._increasePercent;
@@ -46,11 +47,9 @@ export default class Model {
 		const newSize = oldSize + 2;
 		const newField = new DoubleArray<PlayerId>(newSize, newSize);
 
-		for (let x = 0; x < oldSize; x++) {
-			for (let y = 0; y < oldSize; y++) {
-				newField.setAt({ x: x + 1, y: y + 1 }, this._field.getAt({ x, y }));
-			}
-		}
+		this._field.forEach((value, { x, y }) => {
+			newField.setAt({ x: x + 1, y: y + 1 }, value);
+		})
 
 		this._field = newField;
 
@@ -66,11 +65,13 @@ export default class Model {
 	  * 
 	  * direction = 3 - antidiagonal line  check
 	  */
-	protected _checkLine({ x, y }: IVec2, start: number, end: number, direction: number): boolean {
+	protected _checkLine({ x, y }: IVec2, start: number, end: number, direction: number): IVec2[] {
+		let result: IVec2[] = [];
 		let counter = 0;
 		let lastPlayer: unknown;
+		let isLineFound = false;
 
-		if (end - start < this._lineLengthToWin - 1) return false;
+		if (end - start < this._lineLengthToWin - 1) return [];
 
 		for (let i = start; i <= end; i++) {
 
@@ -86,34 +87,50 @@ export default class Model {
 						return { x: x + i, y: y - i };
 				}
 			}
+			const position = getPosition();
+			const value = this._field.getAt(position);
 
-			const value = this._field.getAt(getPosition());
+			const newLine = () => {
+				counter = 1;
+				result = [];
+				result.push(position);
+				lastPlayer = value;
+			}
 
 			if (value == undefined) {
+				if (isLineFound) {
+					return result;
+				}
+
+				result = [];
 				counter = 0;
 
 				continue;
 			}
 
 			if (counter == 0) {
-				counter++;
-				lastPlayer = value;
+				newLine();
 
 				continue;
 			}
 
 			if (lastPlayer! == value) {
 				counter++;
+				result.push(position);
 			} else {
-				counter = 0;
+				if (isLineFound) {
+					return result;
+				}
+
+				newLine();
 			}
 
 			if (counter == this._lineLengthToWin) {
-				return true;
+				isLineFound = true;
 			}
 		}
 
-		return false;
+		return isLineFound ? result : [];
 	}
 
 	protected _sendMessage<T extends ModelEvent>(event: T, data?: MessageData[T]): void {
@@ -141,27 +158,26 @@ export default class Model {
 	public onEvent(view: IView, { type, detail: data }: CustomEvent): void {
 		switch (type) {
 			case ModelEvent.Init:
-				view.onInit((<MessageData[ModelEvent.Init]>data).size);
+				view.onInit(data);
 				break;
 			case ModelEvent.UpdateCell:
-				const { position, value } = data as MessageData[ModelEvent.UpdateCell];
-				view.onUpdateCell(position, value);
+				view.onUpdateCell(data);
 				break;
 			case ModelEvent.IncreaseField:
-				view.onIncreaseField();
+				view.onIncreaseField(data);
 				break;
 			case ModelEvent.Win:
-				view.onWin((<MessageData[ModelEvent.Win]>data).winPlayerId)
+				view.onWin(data)
 				break;
 		}
 	}
 
 	public sendWinMessage(winPlayerId: string): void {
-		this._sendMessage(ModelEvent.Win, { winPlayerId });
+		this._sendMessage(ModelEvent.Win, { winPlayerId, winLine: this._winLine },);
 	}
 
 	public init(): void {
-		this._sendMessage(ModelEvent.Init, { size: this.size });
+		this._sendMessage(ModelEvent.Init, { size: this.size, array: this.getFieldData() });
 	}
 
 	public setCellAt(position: IVec2, value: PlayerId): boolean {
@@ -215,10 +231,18 @@ export default class Model {
 
 					break;
 			}
+			const line = this._checkLine(position, start, end, j)
+			if (line.length > 0) {
+				this._winLine = line;
 
-			if (this._checkLine(position, start, end, j)) return true;
+				return true
+			};
 		}
 
 		return false;
+	}
+
+	public getFieldData(): DoubleArray<PlayerId> {
+		return this._field.getCopy();
 	}
 }

@@ -5,6 +5,7 @@ import { SceneKeys } from './SceneKeys';
 import Cell from '../GameObjects/Cell';
 import Controller from '../../GameModel/Controller/Controller';
 import { PlayerId } from '../../GameModel/Model/Model';
+import { MessageData, ModelEvent } from '../../GameModel/Model/ModelEvent';
 
 export interface TicTacToeFieldInitData {
 	controller: Controller;
@@ -15,13 +16,22 @@ export interface TicTacToeFieldInitData {
 
 export default class TicTacToeField extends Phaser.Scene implements IView {
 	protected _maxFieldSize!: number;
-	protected _size!: number;
 	protected _xOffset!: number;
 	protected _yOffset!: number;
-	protected _cells: Cell[] = [];
+
+	public size!: number;
+	public cells: Cell[] = [];
 
 	public abortController: AbortController;
 	public cellPressCallback?: (x: number, y: number) => void;
+
+	public get cellSize() {
+		return this._maxFieldSize / this.size;
+	}
+
+	public get renderCellSize() {
+		return this.cellSize * 0.9;
+	}
 
 	constructor() {
 		super(SceneKeys.TicTacToeField);
@@ -29,17 +39,21 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 		this.abortController = new AbortController();
 	}
 
-	protected _createCell(x: number, y: number): void {
-		const cellSize = this._maxFieldSize / this._size;
+	protected _getCellPosition(x: number, y: number): [number, number] {
+		x = this._xOffset + (x - (this.size / 2)) * this.cellSize + this.cellSize / 2;
+		y = this._yOffset + (y - (this.size / 2)) * this.cellSize + this.cellSize / 2;
 
+		return [x, y];
+	}
+
+	protected _createCell(x: number, y: number, initialState?: PlayerId): Cell {
 		const fieldX = x;
 		const fieldY = y;
 
-		x = this._xOffset + (x - (this._size / 2)) * cellSize + cellSize / 2;
-		y = this._yOffset + (y - (this._size / 2)) * cellSize + cellSize / 2;
+		[x, y] = this._getCellPosition(x, y);
 
 		const cell = new Cell(this, x, y);
-		cell.setCellSize(cellSize * 0.9);
+		cell.setCellSize(0);
 
 		cell.fieldX = fieldX;
 		cell.fieldY = fieldY;
@@ -47,36 +61,16 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 		cell.callback = (x: number, y: number) => this.cellPressCallback && this.cellPressCallback(x, y);
 
 		this.add.existing(cell);
-		this._cells.push(cell);
-	}
+		this.cells.push(cell);
 
-	public init({ xOffset = 0, yOffset = 0, maxFieldSize = 320 }: TicTacToeFieldInitData) {
-		this._maxFieldSize = maxFieldSize;
-		this._xOffset = xOffset;
-		this._yOffset = yOffset;
-	}
-
-	public create() { }
-
-	public unsubscribe(): void {
-		this.abortController.abort();
-	}
-
-	public onInit(size: number): void {
-		this._size = size;
-
-		for (let x = 0; x < size; x++) {
-			for (let y = 0; y < size; y++) {
-				this._createCell(x, y);
-			}
+		if (initialState != undefined) {
+			this._updateCell(cell, initialState);
 		}
+
+		return cell;
 	}
 
-	public onUpdateCell({ x, y }: IVec2, value: PlayerId): void {
-		const cell = this._cells.find(c => c.fieldX == x && c.fieldY == y);
-
-		if (!cell) return;
-
+	protected _updateCell(cell: Cell, value: PlayerId): void {
 		switch (value) {
 			case PlayerId.Cross:
 				cell.setCross();
@@ -87,28 +81,108 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 		}
 	}
 
+	public init({ xOffset = 0, yOffset = 0, maxFieldSize = 320 }: TicTacToeFieldInitData) {
+		this._maxFieldSize = maxFieldSize;
+		this._xOffset = xOffset;
+		this._yOffset = yOffset;
+	}
+
+	public create() { }
+
+	public resizeField(): void {
+		for (const cell of this.cells) {
+			const [x, y] = this._getCellPosition(cell.fieldX, cell.fieldY);
+			const size = cell.size;
+
+			const ease = Phaser.Math.Easing.Sine.Out;
+
+			this.tweens.add({
+				targets: cell,
+				x: x,
+				y: y,
+				onUpdate: (tween, target: Cell) => { target.setCellSize(size + (this.renderCellSize - size) * ease(tween.progress)) },
+				duration: 250,
+				ease
+			})
+		}
+	}
+
+	public off(): void {
+		this.tweens.add({
+			targets: this.cells,
+			y: '-=' + this.cellSize * 3,
+			alpha: 0,
+			duration: 500,
+			ease: Phaser.Math.Easing.Back.In
+		})
+	}
+
+	public unsubscribe(): void {
+		this.abortController.abort();
+	}
+
+	public onInit({ size, array }: MessageData[ModelEvent.Init]): void {
+		this.size = size;
+
+		array.forEach((value, { x, y }) => {
+			const cell = this._createCell(x, y, value);
+
+			value != undefined && this._updateCell(cell, value);
+		})
+
+		this.resizeField();
+	}
+
+	public onUpdateCell({ position, value }: MessageData[ModelEvent.UpdateCell]): void {
+		const { x, y } = position;
+		const cell = this.cells.find(c => c.fieldX == x && c.fieldY == y);
+
+		if (!cell) return;
+
+		this._updateCell(cell, value);
+	}
+
 	public onIncreaseField(): void {
-		for (let i = 0; i < this._size; i++) {
+		for (let i = 0; i < this.size; i++) {
 			this._createCell(-1, i);
 			this._createCell(i, -1);
-			this._createCell(this._size, i);
-			this._createCell(i, this._size);
+			this._createCell(this.size, i);
+			this._createCell(i, this.size);
 		}
 
 		this._createCell(-1, -1);
-		this._createCell(-1, this._size);
-		this._createCell(this._size, -1);
-		this._createCell(this._size, this._size);
+		this._createCell(-1, this.size);
+		this._createCell(this.size, -1);
+		this._createCell(this.size, this.size);
 
-		for (const cell of this._cells) {
+		for (const cell of this.cells) {
 			cell.fieldX++;
 			cell.fieldY++;
 		}
 
-		this._size += 2;
+		this.size += 2;
+		this.resizeField();
 	}
 
-	public onWin(winPlayerId: string): void {
-		console.log(`Player '${winPlayerId}' has won!`);
+	public onWin({ winPlayerId, winLine }: MessageData[ModelEvent.Win]): void {
+		const winCells = this.cells
+			.filter(cell => winLine.find((pos) => (pos.x == cell.fieldX && pos.y == cell.fieldY)))
+			.sort((a, b) => a.fieldX - b.fieldX == 0 ? a.fieldY - b.fieldY : a.fieldX - b.fieldX);
+
+		for (const cell of winCells) {
+			this.children.bringToTop(cell);
+		}
+
+		this.tweens.add({
+			targets: winCells,
+			y: '-=' + this.cellSize / 2,
+			duration: 500,
+			delay: (target: Cell) => winCells.indexOf(target) * 100,
+			ease: Phaser.Math.Easing.Sine.Out,
+			yoyo: true,
+			onComplete: () => this.off()
+		})
+
+		// this.off()
 	}
 }

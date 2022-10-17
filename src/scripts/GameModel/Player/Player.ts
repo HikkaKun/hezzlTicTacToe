@@ -15,7 +15,7 @@ export default class Player {
 		this._id = id;
 	}
 
-	public clickOnCell(position: IVec2): void {
-		this._controller.onCellClick(position, this.id);
+	public clickOnCell(position?: IVec2): void {
+		position && this._controller.onCellClick(position, this.id);
 	}
 }
