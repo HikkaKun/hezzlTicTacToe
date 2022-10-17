@@ -92,6 +92,6 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	}
 
 	public onWin(winPlayerId: string): void {
-		throw new Error('Method not implemented.');
+		console.log(`Player '${winPlayerId}' has won!`);
 	}
 }

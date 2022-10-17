@@ -59,9 +59,9 @@ export default class Model {
 		let counter = 0;
 		let lastPlayer: unknown;
 
-		if (end - start < this._lineLengthToWin) return false;
+		if (end - start < this._lineLengthToWin - 1) return false;
 
-		for (let i = start; i < end; i++) {
+		for (let i = start; i <= end; i++) {
 
 			function getPosition(): IVec2 {
 				switch (direction) {
@@ -163,8 +163,12 @@ export default class Model {
 		return true;
 	}
 
+	public isCellEmpty(position: IVec2): boolean {
+		if (this._field.isInvalidPosition(position)) return false;
 
-	//TODO: отрефакторить функцию - сейчас победа не срабатывает
+		return this._field.getAt(position) == undefined;
+	}
+
 	public checkForWin(position: IVec2): boolean {
 		if (this._field.isInvalidPosition(position)) return false;
 		const { x, y } = position;
@@ -191,11 +195,12 @@ export default class Model {
 					break;
 				case 2:
 					start = Math.max(left, top);
-					end = Math.max(right, bottom);
+					end = Math.min(right, bottom);
 					break;
 				case 3:
-					start = Math.min(left, top);
-					end = Math.min(right, bottom);
+					start = Math.max(left, -bottom);
+					end = Math.min(right, Math.abs(top));
+
 					break;
 			}
 

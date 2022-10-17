@@ -28,6 +28,7 @@ export default class Controller {
 	public onCellClick(position: IVec2, playerId: PlayerId): void {
 		if (this._isGameOver) return;
 		if (!this.checkCurrentPlayer(playerId)) return;
+		if (!this._model.isCellEmpty(position)) return;
 
 		const isCellChanged = this._model.setCellAt(position, this._playerIds[this._currentPlayerIndex]);
 
@@ -38,6 +39,7 @@ export default class Controller {
 		if (!isWin) {
 			this._switchPlayer();
 		} else {
+			this._isGameOver = true;
 			this._model.sendWinMessage(playerId);
 		}
 	}
