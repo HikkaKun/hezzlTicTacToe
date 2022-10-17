@@ -1,10 +1,10 @@
-import Model from '../Model/Model';
+import Model, { PlayerId } from '../Model/Model';
 import { IVec2 } from '../../Utils/IVec2';
 
 export default class Controller {
 	protected readonly _model: Model;
 	protected _currentPlayerIndex: number;
-	protected _playerIds?: string[];
+	protected _playerIds!: PlayerId[];
 	protected _isGameOver: boolean;
 
 	constructor(model: Model) {
@@ -17,15 +17,19 @@ export default class Controller {
 		this._currentPlayerIndex = this._currentPlayerIndex == 0 ? 1 : 0;
 	}
 
-	public setPlayerIds(value: string[]): void {
+	public startGame(): void {
+		this._model.init();
+	}
+
+	public setPlayerIds(value: PlayerId[]): void {
 		this._playerIds = value.slice();
 	}
 
-	public onCellClick(position: IVec2, playerId: string): void {
+	public onCellClick(position: IVec2, playerId: PlayerId): void {
 		if (this._isGameOver) return;
 		if (!this.checkCurrentPlayer(playerId)) return;
 
-		const isCellChanged = this._model.setCellAt(position, this._currentPlayerIndex);
+		const isCellChanged = this._model.setCellAt(position, this._playerIds[this._currentPlayerIndex]);
 
 		if (!isCellChanged) return;
 
@@ -38,7 +42,11 @@ export default class Controller {
 		}
 	}
 
-	public checkCurrentPlayer(playerId: string) {
+	public checkCurrentPlayer(playerId: string): boolean {
 		return this._playerIds && playerId == this._playerIds[this._currentPlayerIndex];
+	}
+
+	public getPlayerIndex(): number {
+		return this._currentPlayerIndex;
 	}
 }

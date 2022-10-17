@@ -8,8 +8,13 @@ export interface ModelConfig {
 	lineLengthToWin?: number;
 }
 
+export enum PlayerId {
+	Cross = 'x',
+	Circle = 'o'
+}
+
 export default class Model {
-	protected _field: DoubleArray<unknown>;
+	protected _field: DoubleArray<PlayerId>;
 	protected _lineLengthToWin: number;
 	protected _eventTarget: EventTarget;
 
@@ -22,7 +27,7 @@ export default class Model {
 	}
 
 	constructor(config?: ModelConfig) {
-		this._field = new DoubleArray<number>(config?.initialSize ?? 3, config?.initialSize ?? 3);
+		this._field = new DoubleArray<PlayerId>(config?.initialSize ?? 3, config?.initialSize ?? 3);
 		this._lineLengthToWin = config?.lineLengthToWin ?? 3;
 		this._eventTarget = new EventTarget();
 	}
@@ -30,7 +35,7 @@ export default class Model {
 	protected _increaseFieldSize(): void {
 		const oldSize = this.size;
 		const newSize = oldSize + 2;
-		const newField = new DoubleArray<unknown>(newSize, newSize);
+		const newField = new DoubleArray<PlayerId>(newSize, newSize);
 
 		for (let x = 0; x < oldSize; x++) {
 			for (let y = 0; y < oldSize; y++) {
@@ -148,14 +153,18 @@ export default class Model {
 		this._sendMessage(ModelEvent.Init, { size: this.size });
 	}
 
-	public setCellAt(position: IVec2, value: unknown): boolean {
+	public setCellAt(position: IVec2, value: PlayerId): boolean {
 		if (this._field.isInvalidPosition(position)) return false;
 
 		this._field.setAt(position, value);
 
+		this._sendMessage(ModelEvent.UpdateCell, { position, value });
+
 		return true;
 	}
 
+
+	//TODO: отрефакторить функцию - сейчас победа не срабатывает
 	public checkForWin(position: IVec2): boolean {
 		if (this._field.isInvalidPosition(position)) return false;
 		const { x, y } = position;
@@ -186,7 +195,7 @@ export default class Model {
 					break;
 				case 3:
 					start = Math.min(left, top);
-					end = Math.max(right, bottom);
+					end = Math.min(right, bottom);
 					break;
 			}
 

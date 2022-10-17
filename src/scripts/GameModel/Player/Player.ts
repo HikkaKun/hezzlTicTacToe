@@ -1,15 +1,16 @@
 import Controller from '../Controller/Controller';
 import { IVec2 } from '../../Utils/IVec2';
+import { PlayerId } from '../Model/Model';
 
 export default class Player {
 	protected _controller: Controller;
-	protected readonly _id: string;
+	protected readonly _id: PlayerId;
 
 	public get id() {
 		return this._id;
 	}
 
-	constructor(id: string, controller: Controller) {
+	constructor(id: PlayerId, controller: Controller) {
 		this._controller = controller;
 		this._id = id;
 	}

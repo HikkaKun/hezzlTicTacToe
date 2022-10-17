@@ -33,7 +33,6 @@ export default class DoubleArray<T> {
 		this._height = height;
 
 		const array = [];
-		array.length = height;
 
 		for (let i = 0; i < height; i++) {
 			const row: (T | undefined)[] = [];

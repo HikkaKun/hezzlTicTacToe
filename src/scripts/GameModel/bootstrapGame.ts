@@ -15,6 +15,7 @@ export function bootstrapGame(view: IView, playerCreator: PlayerCreator, config?
 	const controller = new Controller(model);
 	const players = playerCreator.createPlayers(controller);
 
+	controller.setPlayerIds(players.map(p => p.id));
 	model.subscribeView(view);
 
 	return { model, controller, players };

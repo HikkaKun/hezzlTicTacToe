@@ -19,13 +19,23 @@ export default class Menu extends Phaser.Scene {
 	}
 
 	public create(): void {
-		const field = this.scene.add(SceneKeys.TicTacToeField, TicTacToeField, true) as TicTacToeField;
-		this.field = field;
+		this.field = this.scene.add(SceneKeys.TicTacToeField, TicTacToeField, true, { xOffset: 320, yOffset: 320, maxFieldSize: 320 }) as TicTacToeField;
 
 		const button = this.add.existing(new Button(this, 320, 320));
 		button.init(ImageKeys.Button, () => {
 			button.toggleInteractive(false);
-			this.gameData = bootstrapGame(this.field, new LocalPlayerVsPlayerCreator());
+			this.gameData = bootstrapGame(this.field, new LocalPlayerVsPlayerCreator(), { initialSize: 3 });
+			const { controller, players } = this.gameData;
+
+			this.field.cellPressCallback = (x: number, y: number) => players[controller.getPlayerIndex()].clickOnCell({ x, y });
+
+			controller.startGame();
+			this.tweens.add({
+				targets: button,
+				delay: 250,
+				alpha: 0,
+				duration: 500
+			});
 		}, '2 Players');
 
 	}

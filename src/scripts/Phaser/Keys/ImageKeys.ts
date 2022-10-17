@@ -1,3 +1,6 @@
 export enum ImageKeys {
-	Button = "button"
+	Button = "button",
+	CellBorder = "cell-border",
+	Cross = "cross",
+	Circle = "circle",
 }

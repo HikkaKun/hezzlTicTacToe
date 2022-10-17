@@ -19,6 +19,9 @@ export default class Preloader extends Phaser.Scene {
 	public preload(): void {
 		this.loadFont('monogram', 'assets/monogram-extended.ttf');
 		this.load.image(ImageKeys.Button, 'assets/images/grey_button00.png');
+		this.load.svg(ImageKeys.CellBorder, 'assets/images/square-full-regular.svg');
+		this.load.svg(ImageKeys.Cross, 'assets/images/cross-svgrepo-com.svg');
+		this.load.svg(ImageKeys.Circle, 'assets/images/circle-regular.svg');
 	}
 
 	public create(): void {
