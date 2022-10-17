@@ -6,6 +6,7 @@ import { MessageData, ModelEvent } from './ModelEvent';
 export interface ModelConfig {
 	initialSize?: number;
 	lineLengthToWin?: number;
+	increasePercent?: number;
 }
 
 export enum PlayerId {
@@ -17,6 +18,12 @@ export default class Model {
 	protected _field: DoubleArray<PlayerId>;
 	protected _lineLengthToWin: number;
 	protected _eventTarget: EventTarget;
+	protected _filledCells: number;
+	protected _increasePercent: number;
+
+	public get needToIncrease() {
+		return this._filledCells / (this.size * this.size) >= this._increasePercent;
+	}
 
 	public get eventEmitter() {
 		return this._eventTarget;
@@ -30,9 +37,11 @@ export default class Model {
 		this._field = new DoubleArray<PlayerId>(config?.initialSize ?? 3, config?.initialSize ?? 3);
 		this._lineLengthToWin = config?.lineLengthToWin ?? 3;
 		this._eventTarget = new EventTarget();
+		this._filledCells = 0;
+		this._increasePercent = config?.increasePercent ?? 0.75;
 	}
 
-	protected _increaseFieldSize(): void {
+	public increaseFieldSize(): void {
 		const oldSize = this.size;
 		const newSize = oldSize + 2;
 		const newField = new DoubleArray<PlayerId>(newSize, newSize);
@@ -44,6 +53,8 @@ export default class Model {
 		}
 
 		this._field = newField;
+
+		this._sendMessage(ModelEvent.IncreaseField);
 	}
 
 	/**
@@ -105,7 +116,7 @@ export default class Model {
 		return false;
 	}
 
-	protected _sendMessage<T extends ModelEvent>(event: T, data: MessageData[T]): void {
+	protected _sendMessage<T extends ModelEvent>(event: T, data?: MessageData[T]): void {
 		this._eventTarget.dispatchEvent(new CustomEvent(event, { detail: data }));
 	}
 
@@ -159,6 +170,7 @@ export default class Model {
 		this._field.setAt(position, value);
 
 		this._sendMessage(ModelEvent.UpdateCell, { position, value });
+		this._filledCells++;
 
 		return true;
 	}

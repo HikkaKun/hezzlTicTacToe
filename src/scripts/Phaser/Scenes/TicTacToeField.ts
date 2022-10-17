@@ -88,7 +88,24 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	}
 
 	public onIncreaseField(): void {
-		throw new Error('Method not implemented.');
+		for (let i = 0; i < this._size; i++) {
+			this._createCell(-1, i);
+			this._createCell(i, -1);
+			this._createCell(this._size, i);
+			this._createCell(i, this._size);
+		}
+
+		this._createCell(-1, -1);
+		this._createCell(-1, this._size);
+		this._createCell(this._size, -1);
+		this._createCell(this._size, this._size);
+
+		for (const cell of this._cells) {
+			cell.fieldX++;
+			cell.fieldY++;
+		}
+
+		this._size += 2;
 	}
 
 	public onWin(winPlayerId: string): void {

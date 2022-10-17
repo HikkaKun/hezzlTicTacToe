@@ -37,6 +37,10 @@ export default class Controller {
 		const isWin = this._model.checkForWin(position);
 
 		if (!isWin) {
+			if (this._model.needToIncrease) {
+				this._model.increaseFieldSize();
+			}
+
 			this._switchPlayer();
 		} else {
 			this._isGameOver = true;
