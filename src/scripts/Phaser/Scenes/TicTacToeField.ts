@@ -6,6 +6,8 @@ import Cell from '../GameObjects/Cell';
 import Controller from '../../GameModel/Controller/Controller';
 import { PlayerId } from '../../GameModel/Model/Model';
 import { MessageData, ModelEvent } from '../../GameModel/Model/ModelEvent';
+import Button, { addGameButton } from '../GameObjects/Button';
+import { ImageKeys } from '../Keys/ImageKeys';
 
 export interface TicTacToeFieldInitData {
 	controller: Controller;
@@ -19,11 +21,14 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	protected _xOffset!: number;
 	protected _yOffset!: number;
 
+	public restartButton!: Button;
 	public size!: number;
 	public cells: Cell[] = [];
 
 	public abortController: AbortController;
 	public cellPressCallback: (x: number, y: number) => void;
+
+	public restartCallback?: () => void;
 
 	public get cellSize() {
 		return this._maxFieldSize / this.size;
@@ -88,7 +93,11 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 		this._yOffset = yOffset;
 	}
 
-	public create() { }
+	public create() {
+		this.restartButton = addGameButton(this, 320, 320 + this._maxFieldSize / 2 + 30, ImageKeys.Button, () => {
+			this.restartCallback && this.restartCallback();
+		}, 'Restart');
+	}
 
 	public resizeField(): void {
 		for (const cell of this.cells) {
@@ -120,9 +129,17 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 	public unsubscribe(): void {
 		this.abortController.abort();
+
+		this.abortController = new AbortController();
 	}
 
 	public onInit({ size, array }: MessageData[ModelEvent.Init]): void {
+		for (const cell of this.cells) {
+			cell.destroy();
+		}
+
+		this.cells = [];
+
 		this.size = size;
 
 		array.forEach((value, { x, y }) => {
@@ -187,7 +204,7 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 					cell.setTint(Phaser.Display.Color.GetColor(value, value, value));
 				}
 			}
-		})
+		});
 
 		this.tweens.add({
 			targets: winCells,
@@ -196,9 +213,11 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 			delay: (target: Cell) => winCells.indexOf(target) * 100,
 			ease: Phaser.Math.Easing.Sine.Out,
 			yoyo: true,
-			onComplete: () => this.off()
-		})
+			// onComplete: () => this.off()
+		});
+	}
 
-		// this.off()
+	public showRestartButton(): void {
+
 	}
 }

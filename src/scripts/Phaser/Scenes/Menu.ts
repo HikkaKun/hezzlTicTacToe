@@ -2,7 +2,7 @@ import 'phaser';
 import BotVsPlayerGameCreator from '../../GameModel/GameCreator/BotVsPlayerGameCreator';
 import PlayerVsPlayerGameCreator from '../../GameModel/GameCreator/PlayerVsPlayerGameCreator';
 import Player from '../../GameModel/Player/Player';
-import Button from '../GameObjects/Button';
+import Button, { addGameButton } from '../GameObjects/Button';
 import { ImageKeys } from '../Keys/ImageKeys';
 import { SceneKeys } from './SceneKeys';
 import TicTacToeField from './TicTacToeField';
@@ -23,17 +23,27 @@ export default class Menu extends Phaser.Scene {
 	public create(): void {
 		this.field = this.scene.add(SceneKeys.TicTacToeField, TicTacToeField, true, { xOffset: 320, yOffset: 320, maxFieldSize: 320 }) as TicTacToeField;
 
-		const playerVsPlayer = this.addGameButton(320, 320, ImageKeys.Button, () => {
+		const playerVsPlayer = addGameButton(this, 320, 320, ImageKeys.Button, () => {
 			playerVsPlayer.toggleInteractive(false);
 
-			this.off(() => this.players = new PlayerVsPlayerGameCreator().createGame(this.field));
+			const gameCreator = new PlayerVsPlayerGameCreator();
+
+			this.field.restartCallback = () => gameCreator.restart();
+
+			this.off(() => this.players = gameCreator.createGame(this.field));
 		}, '2 Players');
 
-		const botVsPlayer = this.addGameButton(320, 240, ImageKeys.Button, () => {
+		const botVsPlayer = addGameButton(this, 320, 240, ImageKeys.Button, () => {
 			botVsPlayer.toggleInteractive(false);
 
-			this.off(() => this.players = new BotVsPlayerGameCreator().createGame(this.field));
+			const gameCreator = new BotVsPlayerGameCreator();
+
+			this.field.restartCallback = () => gameCreator.restart();
+
+			this.off(() => this.players = gameCreator.createGame(this.field));
 		}, 'Singleplayer');
+
+		this.elements.push(playerVsPlayer, botVsPlayer);
 	}
 
 	public off(completeCallback?: Function): void {
@@ -44,16 +54,5 @@ export default class Menu extends Phaser.Scene {
 			duration: 250,
 			onComplete: () => completeCallback && completeCallback()
 		});
-	}
-
-	public addGameButton(x: number, y: number, image: string | Phaser.Textures.Texture, callback: () => void, text?: string): Button {
-		const button = new Button(this, x, y);
-
-		button.init(image, callback, text);
-
-		this.add.existing(button);
-		this.elements.push(button);
-
-		return button;
 	}
 }

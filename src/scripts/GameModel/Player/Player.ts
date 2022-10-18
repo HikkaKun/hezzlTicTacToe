@@ -10,6 +10,10 @@ export default class Player {
 		return this._id;
 	}
 
+	public set controller(value: Controller) {
+		this._controller = value;
+	}
+
 	constructor(id: PlayerId, controller: Controller) {
 		this._controller = controller;
 		this._id = id;
