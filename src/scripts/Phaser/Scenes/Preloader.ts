@@ -3,9 +3,9 @@ import { ImageKeys } from '../Keys/ImageKeys';
 import { SceneKeys } from './SceneKeys';
 
 interface Asset {
-	type: 'json' | 'image' | 'svg';
+	type: 'json' | 'image' | 'svg' | 'html';
 	key: ImageKeys;
-	url: string
+	url: string;
 }
 
 interface CustomAsset {

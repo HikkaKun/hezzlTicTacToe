@@ -3,6 +3,8 @@ import BotVsPlayerGameCreator from '../../GameModel/GameCreator/BotVsPlayerGameC
 import PlayerVsPlayerGameCreator from '../../GameModel/GameCreator/PlayerVsPlayerGameCreator';
 import { PlayerId } from '../../GameModel/Model/Model';
 import Player from '../../GameModel/Player/Player';
+import OnlinePlayer from '../../Online/OnlinePlayer';
+import { ALPHABET } from '../../Utils/Utils';
 import Button, { addGameButton, toggleButtons, toggleButtonsFancy } from '../GameObjects/Button';
 import { ImageKeys } from '../Keys/ImageKeys';
 import { SceneKeys } from './SceneKeys';
@@ -11,9 +13,13 @@ import TicTacToeField from './TicTacToeField';
 export default class Menu extends Phaser.Scene {
 	public field!: TicTacToeField;
 	public players?: [Player, Player];
-	public elements: Phaser.GameObjects.GameObject[] = [];
+	public elements: Button[] = [];
+	public chooseModeElements: Button[] = [];
+	public multiplayerElements: Button[] = [];
+	public connectButton!: Button;
 
-	public chooseModeElements: Phaser.GameObjects.GameObject[] = [];
+	public inputForm!: Phaser.GameObjects.DOMElement;
+	public textbox!: HTMLInputElement;
 
 	constructor() {
 		super(SceneKeys.Menu);
@@ -26,32 +32,51 @@ export default class Menu extends Phaser.Scene {
 	public create(): void {
 		this.field = this.scene.add(SceneKeys.TicTacToeField, TicTacToeField, true, { xOffset: 320, yOffset: 320, maxFieldSize: 320 }) as TicTacToeField;
 		this.field.offCallback = () => {
-			toggleButtonsFancy(this, this.elements as Button[], true);
+			toggleButtonsFancy(this, this.elements, true);
 		}
 
-		const playerVsPlayer = addGameButton(this, 320, 320, ImageKeys.Button, () => {
-			playerVsPlayer.toggleInteractive(false);
 
+		this.createMainMenu();
+		this.createBotModeMenu();
+		this.createMultiplayerMenu();
+
+		toggleButtons(this.chooseModeElements, false);
+		toggleButtons(this.multiplayerElements, false);
+	}
+
+	public createMainMenu(): void {
+		const playerVsPlayer = addGameButton(this, 320, 320, ImageKeys.Button, () => {
 			const gameCreator = new PlayerVsPlayerGameCreator();
 
 			this.field.restartCallback = () => gameCreator.restart();
 
-			toggleButtonsFancy(this, this.elements as Button[], false, () => this.players = gameCreator.createGame(this.field));
+			toggleButtonsFancy(this, this.elements, false, () => this.players = gameCreator.createGame(this.field));
 		}, '2 Players');
 
-		const botVsPlayer = addGameButton(this, 320, 240, ImageKeys.Button, () => this.toggleModeMenu(true), 'Singleplayer');
+		const botVsPlayer = addGameButton(this, 320, 270, ImageKeys.Button, () => this.toggleModeMenu(true), 'Singleplayer');
 
-		this.createBotModeMenu();
-		toggleButtons(this.chooseModeElements as Button[], false);
+		const hostButton = addGameButton(this, 320, 370, ImageKeys.Button, () => {
+			OnlinePlayer.openCallback = (id) => this.textbox.value = id;
+			OnlinePlayer.initPeer();
 
-		this.elements.push(playerVsPlayer, botVsPlayer);
+			this.toggleMultiplayerMenu(true, true);
+		}, 'Host');
+
+		const connectButton = addGameButton(this, 320, 420, ImageKeys.Button, () => {
+			OnlinePlayer.openCallback = (id) => this.textbox.value = id;
+			OnlinePlayer.initPeer();
+
+			this.toggleMultiplayerMenu(true, false);
+		}, 'Connect');
+
+		this.elements.push(playerVsPlayer, botVsPlayer, hostButton, connectButton);
 	}
 
 	public createBotModeMenu(): void {
-		const random = this.createBotModeButton(320, 260, 'random');
+		const random = this.createBotModeButton(320, 270, 'random');
 		const first = this.createBotModeButton(320, 320, 'first');
-		const second = this.createBotModeButton(320, 380, 'second');
-		const back = addGameButton(this, 320, 460, ImageKeys.Button, () => this.toggleModeMenu(false), 'Back');
+		const second = this.createBotModeButton(320, 370, 'second');
+		const back = addGameButton(this, 320, 470, ImageKeys.Button, () => this.toggleModeMenu(false), 'Back');
 
 		this.chooseModeElements.push(random, first, second, back);
 	}
@@ -85,19 +110,66 @@ export default class Menu extends Phaser.Scene {
 				gameCreator.restart()
 			};
 
-			toggleButtonsFancy(this, this.chooseModeElements as Button[], false, () => this.players = gameCreator.createGame(this.field));
+			toggleButtonsFancy(this, this.chooseModeElements, false, () => this.players = gameCreator.createGame(this.field));
 		}, text);
 
 		return button;
 	}
 
+	public createMultiplayerMenu(): void {
+		const element = this.add.dom(320, 320).createFromCache('textbox');
+
+		const textbox = element.getChildByName('ID') as HTMLInputElement;
+
+		element.addListener('input');
+		element.on('input', () => {
+			const text = textbox.value.toUpperCase();
+			let corrected = "";
+
+			for (const char of text) {
+				if (ALPHABET.includes(char)) {
+					corrected += char;
+				}
+			}
+
+			textbox.value = corrected.substring(0, 4);
+		});
+
+		element.setVisible(false);
+
+		const back = addGameButton(this, 320, 420, ImageKeys.Button, () => this.toggleMultiplayerMenu(false), 'Back');
+		const connect = addGameButton(this, 320, 370, ImageKeys.Button, () => OnlinePlayer.connect(textbox.value), 'Connect');
+
+		this.inputForm = element;
+		this.textbox = textbox;
+		this.connectButton = connect;
+		this.multiplayerElements.push(back, connect);
+	}
+
 	public toggleModeMenu(isOn: boolean): void {
 		if (isOn) {
-			toggleButtonsFancy(this, this.elements as Button[], !isOn,
-				() => toggleButtonsFancy(this, this.chooseModeElements as Button[], isOn));
+			toggleButtonsFancy(this, this.elements, !isOn,
+				() => toggleButtonsFancy(this, this.chooseModeElements, isOn));
 		} else {
-			toggleButtonsFancy(this, this.chooseModeElements as Button[], isOn,
-				() => toggleButtonsFancy(this, this.elements as Button[], !isOn));
+			toggleButtonsFancy(this, this.chooseModeElements, isOn,
+				() => toggleButtonsFancy(this, this.elements, !isOn));
+		}
+	}
+
+	public toggleMultiplayerMenu(isOn: boolean, isHost: boolean = true): void {
+		if (isOn) {
+			toggleButtonsFancy(this, this.elements, !isOn,
+				() => {
+					toggleButtonsFancy(this, this.multiplayerElements, isOn, () => this.inputForm.setVisible(isOn))
+					this.textbox.readOnly = isHost;
+					this.textbox.value = isHost ? OnlinePlayer.id : this.textbox.value;
+					isHost && this.connectButton.toggleInteractive(!isHost);
+				});
+		} else {
+			this.inputForm.setVisible(isOn)
+
+			toggleButtonsFancy(this, this.multiplayerElements, isOn,
+				() => toggleButtonsFancy(this, this.elements, !isOn));
 		}
 	}
 }

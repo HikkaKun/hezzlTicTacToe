@@ -14,3 +14,15 @@ export function shuffleArray<T>(array: T[]): T[] {
 
 	return array;
 }
+
+export const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+export function randomOnlineId(length = 4): string {
+	let result = "";
+
+	for (let i = 0; i < length; i++) {
+		result += ALPHABET[randomInt(ALPHABET.length)];
+	}
+
+	return result;
+} 

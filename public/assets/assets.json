@@ -18,5 +18,10 @@
 		"type": "svg",
 		"key": "circle",
 		"url": "images/circle-regular.svg"
+	},
+	{
+		"type": "html",
+		"key": "textbox",
+		"url": "html/textbox.html"
 	}
 ]

@@ -79,11 +79,16 @@ export default class Button extends Phaser.GameObjects.Container {
 		const image = this.image;
 		if (isOn) {
 			image.clearTint();
-			image.setInteractive()
-				.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => image.setTint(0xDDDDDD))
-				.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => image.clearTint())
-				.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.click());
+			if (!image.input) {
+				image.setInteractive()
+					.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => image.setTint(0xDDDDDD))
+					.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => image.clearTint())
+					.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.click());
+			} else if (!image.input.enabled) {
+				image.setInteractive()
+			}
 		} else {
+			image.removeAllListeners();
 			image.removeInteractive();
 			image.setTint(0xAAAAAA);
 		}
