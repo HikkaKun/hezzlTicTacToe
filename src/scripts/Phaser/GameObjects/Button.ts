@@ -7,6 +7,34 @@ export function addGameButton(scene: Phaser.Scene, x: number, y: number, image: 
 	return button;
 }
 
+export function toggleButtons(buttons: Button[], isOn: boolean, completeCallback?: Function, offset = 100): void {
+	for (const button of buttons) {
+		if (button.visible == isOn) continue;
+
+		button.toggleInteractive(isOn);
+		button.setVisible(isOn);
+		button.alpha = isOn ? 1 : 0;
+		button.y += (isOn ? offset : -offset);
+	}
+}
+
+export function toggleButtonsFancy(scene: Phaser.Scene, buttons: Button[], isOn: boolean, completeCallback?: Function, offset = 100): void {
+	for (const button of buttons) {
+		button.toggleInteractive(isOn);
+		button.setVisible(true);
+	}
+
+	scene.tweens.add({
+		targets: buttons,
+		delay: 250,
+		y: '+=' + (isOn ? offset : -offset),
+		alpha: isOn ? 1 : 0,
+		duration: 250,
+		ease: isOn ? Phaser.Math.Easing.Back.Out : Phaser.Math.Easing.Back.In,
+		onComplete: () => completeCallback && completeCallback()
+	});
+}
+
 export default class Button extends Phaser.GameObjects.Container {
 	public image?: Phaser.GameObjects.Image;
 	public text?: Phaser.GameObjects.Text;

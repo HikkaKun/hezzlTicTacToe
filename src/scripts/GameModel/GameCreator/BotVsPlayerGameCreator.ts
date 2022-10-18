@@ -11,6 +11,33 @@ export default class BotVsPlayerGameCreator extends GameCreator {
 	private _players?: [Player, Player];
 	private _isPlayerFirst?: boolean;
 
+	/**
+	 * Sets the turn order of the player.
+	 * 
+	 * PlayerId.Cross - first
+	 * 
+	 * PlayerId.Circle - second
+	 * 
+	 * random - random
+	 */
+	public setPlayerId(id: PlayerId | 'random'): void {
+		if (id == 'random') {
+			if (!this._players) return;
+
+			const newIsPlayerFirst = Math.random() < 0.5 ? true : false;
+
+			if (newIsPlayerFirst != this._isPlayerFirst) {
+				[this._players[0], this._players[1]] = [this._players[1], this._players[0]];
+				this._players[0].id = PlayerId.Cross;
+				this._players[1].id = PlayerId.Circle;
+
+				this._isPlayerFirst = newIsPlayerFirst;
+			}
+		} else {
+			this._isPlayerFirst = id == PlayerId.Cross;
+		}
+	}
+
 	public createGame(view: IView, config?: ModelConfig): [Player, Player] {
 		const model = new Model(config);
 		const controller = new Controller(model);

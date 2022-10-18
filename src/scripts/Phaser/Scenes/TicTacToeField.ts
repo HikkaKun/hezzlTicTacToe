@@ -6,7 +6,7 @@ import Cell from '../GameObjects/Cell';
 import Controller from '../../GameModel/Controller/Controller';
 import { PlayerId } from '../../GameModel/Model/Model';
 import { MessageData, ModelEvent } from '../../GameModel/Model/ModelEvent';
-import Button, { addGameButton } from '../GameObjects/Button';
+import Button, { addGameButton, toggleButtons, toggleButtonsFancy } from '../GameObjects/Button';
 import { ImageKeys } from '../Keys/ImageKeys';
 
 export interface TicTacToeFieldInitData {
@@ -20,8 +20,9 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	protected _maxFieldSize!: number;
 	protected _xOffset!: number;
 	protected _yOffset!: number;
+	protected _isOn: boolean = false;
 
-	public restartButton!: Button;
+	public buttons: Button[] = [];
 	public size!: number;
 	public cells: Cell[] = [];
 
@@ -29,6 +30,7 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	public cellPressCallback: (x: number, y: number) => void;
 
 	public restartCallback?: () => void;
+	public offCallback?: () => void;
 
 	public get cellSize() {
 		return this._maxFieldSize / this.size;
@@ -94,9 +96,15 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	}
 
 	public create() {
-		this.restartButton = addGameButton(this, 320, 320 + this._maxFieldSize / 2 + 30, ImageKeys.Button, () => {
+		const restart = addGameButton(this, 320, 320 + this._maxFieldSize / 2 + 30, ImageKeys.Button, () => {
 			this.restartCallback && this.restartCallback();
 		}, 'Restart');
+
+		const back = addGameButton(this, 320, 320 + this._maxFieldSize / 2 + 80, ImageKeys.Button, () => this.off(), 'Back');
+
+
+		this.buttons.push(restart, back);
+		toggleButtons(this.buttons, false);
 	}
 
 	public resizeField(): void {
@@ -118,12 +126,19 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	}
 
 	public off(): void {
+		toggleButtonsFancy(this, this.buttons, false);
+
 		this.tweens.add({
 			targets: this.cells,
 			y: '-=' + this.cellSize * 3,
 			alpha: 0,
-			duration: 500,
-			ease: Phaser.Math.Easing.Back.In
+			duration: 250,
+			delay: 250,
+			ease: Phaser.Math.Easing.Back.In,
+			onComplete: () => {
+				this._isOn = false;
+				this.offCallback && this.offCallback()
+			}
 		})
 	}
 
@@ -147,6 +162,11 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 			value != undefined && this._updateCell(cell, value);
 		})
+
+		if (!this._isOn) {
+			toggleButtonsFancy(this, this.buttons, true);
+			this._isOn = true;
+		}
 
 		this.resizeField();
 	}
@@ -213,11 +233,6 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 			delay: (target: Cell) => winCells.indexOf(target) * 100,
 			ease: Phaser.Math.Easing.Sine.Out,
 			yoyo: true,
-			// onComplete: () => this.off()
 		});
-	}
-
-	public showRestartButton(): void {
-
 	}
 }
