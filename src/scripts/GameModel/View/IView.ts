@@ -4,6 +4,8 @@ import { MessageData, ModelEvent } from '../Model/ModelEvent';
 export default interface IView {
 	abortController: AbortController;
 
+	cellPressCallback: (x: number, y: number) => void;
+
 	unsubscribe(): void;
 
 	onInit(data: MessageData[ModelEvent.Init]): void;

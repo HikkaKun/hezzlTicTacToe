@@ -55,4 +55,10 @@ export default class Cell extends Phaser.GameObjects.Container {
 		this.circle.setAlpha(1);
 		this.cross.setAlpha(0);
 	}
+
+	public setTint(value: number): void {
+		for (const chlid of this.list) {
+			(<Phaser.GameObjects.Image>chlid).setTint(value);
+		}
+	}
 }

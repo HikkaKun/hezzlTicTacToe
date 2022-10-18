@@ -23,7 +23,7 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	public cells: Cell[] = [];
 
 	public abortController: AbortController;
-	public cellPressCallback?: (x: number, y: number) => void;
+	public cellPressCallback: (x: number, y: number) => void;
 
 	public get cellSize() {
 		return this._maxFieldSize / this.size;
@@ -37,6 +37,7 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 		super(SceneKeys.TicTacToeField);
 
 		this.abortController = new AbortController();
+		this.cellPressCallback = (x: number, y: number) => console.log(`$Pressed at (${x}, ${y})`);
 	}
 
 	protected _getCellPosition(x: number, y: number): [number, number] {
@@ -169,9 +170,24 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 			.filter(cell => winLine.find((pos) => (pos.x == cell.fieldX && pos.y == cell.fieldY)))
 			.sort((a, b) => a.fieldX - b.fieldX == 0 ? a.fieldY - b.fieldY : a.fieldX - b.fieldX);
 
+		const otherCells = this.cells
+			.filter(cell => !winCells.includes(cell));
+
 		for (const cell of winCells) {
 			this.children.bringToTop(cell);
 		}
+
+		this.tweens.addCounter({
+			from: 255,
+			to: 200,
+			duration: 500,
+			onUpdate: (tween) => {
+				for (const cell of otherCells) {
+					const value = Math.floor(tween.getValue());
+					cell.setTint(Phaser.Display.Color.GetColor(value, value, value));
+				}
+			}
+		})
 
 		this.tweens.add({
 			targets: winCells,
