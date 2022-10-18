@@ -26,10 +26,10 @@ export function toggleButtonsFancy(scene: Phaser.Scene, buttons: Button[], isOn:
 
 	scene.tweens.add({
 		targets: buttons,
-		delay: 250,
+		delay: 100,
 		y: '+=' + (isOn ? offset : -offset),
 		alpha: isOn ? 1 : 0,
-		duration: 250,
+		duration: 200,
 		ease: isOn ? Phaser.Math.Easing.Back.Out : Phaser.Math.Easing.Back.In,
 		onComplete: () => completeCallback && completeCallback()
 	});

@@ -130,10 +130,10 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 		this.tweens.add({
 			targets: this.cells,
-			y: '-=' + this.cellSize * 3,
+			y: '-=' + 100,
 			alpha: 0,
-			duration: 250,
-			delay: 250,
+			duration: 200,
+			delay: 100,
 			ease: Phaser.Math.Easing.Back.In,
 			onComplete: () => {
 				this._isOn = false;
