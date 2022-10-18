@@ -1,0 +1,22 @@
+[
+	{
+		"type": "image",
+		"key": "button",
+		"url": "images/grey_button00.png"
+	},
+	{
+		"type": "svg",
+		"key": "cell-border",
+		"url": "images/square-filled.svg"
+	},
+	{
+		"type": "svg",
+		"key": "cross",
+		"url": "images/cross-svgrepo-com.svg"
+	},
+	{
+		"type": "svg",
+		"key": "circle",
+		"url": "images/circle-regular.svg"
+	}
+]
