@@ -1,10 +1,9 @@
-import { IVec2 } from '../../Utils/IVec2';
 import { MessageData, ModelEvent } from '../Model/ModelEvent';
 
 export default interface IView {
 	abortController: AbortController;
 
-	cellPressCallback: (x: number, y: number) => void;
+	cellPressCallback?: (x: number, y: number) => void;
 
 	unsubscribe(): void;
 

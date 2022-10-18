@@ -51,7 +51,7 @@ export default class Button extends Phaser.GameObjects.Container {
 	}
 
 	public get isInteractive() {
-		return this.image?.input.enabled ? true : false;
+		return this.image?.input?.enabled ? true : false;
 	}
 
 	public init(imageKey: string | Phaser.Textures.Texture, callback: () => void, textString?: string): void {

@@ -1,9 +1,11 @@
 import 'phaser';
 import BotVsPlayerGameCreator from '../../GameModel/GameCreator/BotVsPlayerGameCreator';
+import OnlineVsPlayerGameCreator from '../../GameModel/GameCreator/OnlineVsPlayerGameCreator';
 import PlayerVsPlayerGameCreator from '../../GameModel/GameCreator/PlayerVsPlayerGameCreator';
 import { PlayerId } from '../../GameModel/Model/Model';
 import Player from '../../GameModel/Player/Player';
-import OnlinePlayer from '../../Online/OnlinePlayer';
+import OnlineAdapter from '../../Online/OnlineAdapter';
+import OnlineViewAdapter from '../../Online/OnlineViewAdapter';
 import { ALPHABET } from '../../Utils/Utils';
 import Button, { addGameButton, toggleButtons, toggleButtonsFancy } from '../GameObjects/Button';
 import { ImageKeys } from '../Keys/ImageKeys';
@@ -56,15 +58,15 @@ export default class Menu extends Phaser.Scene {
 		const botVsPlayer = addGameButton(this, 320, 270, ImageKeys.Button, () => this.toggleModeMenu(true), 'Singleplayer');
 
 		const hostButton = addGameButton(this, 320, 370, ImageKeys.Button, () => {
-			OnlinePlayer.openCallback = (id) => this.textbox.value = id;
-			OnlinePlayer.initPeer();
+			OnlineAdapter.openCallback = (id) => this.textbox.value = id;
+			OnlineAdapter.initPeer();
 
 			this.toggleMultiplayerMenu(true, true);
 		}, 'Host');
 
 		const connectButton = addGameButton(this, 320, 420, ImageKeys.Button, () => {
-			OnlinePlayer.openCallback = (id) => this.textbox.value = id;
-			OnlinePlayer.initPeer();
+			OnlineAdapter.openCallback = (id) => this.textbox.value = id;
+			OnlineAdapter.initPeer();
 
 			this.toggleMultiplayerMenu(true, false);
 		}, 'Connect');
@@ -94,8 +96,6 @@ export default class Menu extends Phaser.Scene {
 		}
 
 		const button = addGameButton(this, x, y, ImageKeys.Button, () => {
-			button.toggleInteractive(false);
-
 			const gameCreator = new BotVsPlayerGameCreator();
 
 			if (mode != 'random') {
@@ -138,7 +138,23 @@ export default class Menu extends Phaser.Scene {
 		element.setVisible(false);
 
 		const back = addGameButton(this, 320, 420, ImageKeys.Button, () => this.toggleMultiplayerMenu(false), 'Back');
-		const connect = addGameButton(this, 320, 370, ImageKeys.Button, () => OnlinePlayer.connect(textbox.value), 'Connect');
+		const connect = addGameButton(this, 320, 370, ImageKeys.Button, () => OnlineAdapter.connect(textbox.value), 'Connect');
+
+		OnlineAdapter.connectCallback = () => {
+			const isHost = !this.connectButton.isInteractive;
+
+			if (isHost) {
+
+				const gameCreator = new OnlineVsPlayerGameCreator();
+				this.field.restartCallback = () => gameCreator.restart();
+
+				this.inputForm.setVisible(false);
+				toggleButtonsFancy(this, this.multiplayerElements, false, () => gameCreator.createGame(this.field));
+			} else {
+				this.inputForm.setVisible(false);
+				toggleButtonsFancy(this, this.multiplayerElements, false);
+			}
+		}
 
 		this.inputForm = element;
 		this.textbox = textbox;
@@ -162,7 +178,7 @@ export default class Menu extends Phaser.Scene {
 				() => {
 					toggleButtonsFancy(this, this.multiplayerElements, isOn, () => this.inputForm.setVisible(isOn))
 					this.textbox.readOnly = isHost;
-					this.textbox.value = isHost ? OnlinePlayer.id : this.textbox.value;
+					this.textbox.value = isHost ? OnlineAdapter.id : this.textbox.value;
 					isHost && this.connectButton.toggleInteractive(!isHost);
 				});
 		} else {

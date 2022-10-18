@@ -9,7 +9,7 @@ export default class BotPlayer extends Player {
 		super(id, controller);
 	}
 
-	public clickOnCell(position?: IVec2): void {
+	public clickOnCell(): void {
 		const field = this._controller.getFieldData();
 
 		const empty: IVec2[] = [];
