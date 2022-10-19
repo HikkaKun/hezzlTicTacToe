@@ -25,6 +25,8 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	public buttons: Button[] = [];
 	public size!: number;
 	public cells: Cell[] = [];
+	public currentPlayerText!: Phaser.GameObjects.Text;
+	public multiplayerIdentifier!: Phaser.GameObjects.Text;
 
 	public abortController: AbortController;
 	public cellPressCallback: (x: number, y: number) => void;
@@ -102,6 +104,8 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 		const back = addGameButton(this, 320, 320 + this._maxFieldSize / 2 + 80, ImageKeys.Button, () => this.off(), 'Back');
 
+		this.currentPlayerText = this.add.text(320, 120, 'Turn of []', { fontFamily: 'monogram', fontSize: "32px" }).setOrigin(0.5).setVisible(false);
+		this.multiplayerIdentifier = this.add.text(320, 95, 'You are []', { fontFamily: 'monogram', fontSize: "32px" }).setOrigin(0.5).setVisible(false);
 
 		this.buttons.push(restart, back);
 		toggleButtons(this.buttons, false);
@@ -127,6 +131,9 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 	public off(): void {
 		toggleButtonsFancy(this, this.buttons, false);
+
+		this.currentPlayerText.setVisible(false);
+		this.multiplayerIdentifier.setVisible(false);
 
 		this.tweens.add({
 			targets: this.cells,
@@ -157,11 +164,23 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 		this.size = size;
 
+		let whoTurn = 0;
+
 		array.forEach((value, { x, y }) => {
 			const cell = this._createCell(x, y, value);
 
+			if (value == PlayerId.Cross) {
+				whoTurn++;
+			}
+			else if (value == PlayerId.Circle) {
+				whoTurn--;
+			}
+
 			value != undefined && this._updateCell(cell, value);
 		})
+
+		this.currentPlayerText.setVisible(true);
+		this.currentPlayerText.text = `Turn of [${whoTurn == 0 ? 'X' : 'O'}]`
 
 		if (!this._isOn) {
 			toggleButtonsFancy(this, this.buttons, true);
@@ -176,6 +195,8 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 		const cell = this.cells.find(c => c.fieldX == x && c.fieldY == y);
 
 		if (!cell) return;
+
+		this.currentPlayerText.text = `Turn of [${value == PlayerId.Cross ? 'O' : 'X'}]`
 
 		this._updateCell(cell, value);
 	}
@@ -234,5 +255,9 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 			ease: Phaser.Math.Easing.Sine.Out,
 			yoyo: true,
 		});
+	}
+
+	public onIdentify(data: PlayerId): void {
+		this.multiplayerIdentifier.setVisible(true).text = `You are [${data == PlayerId.Cross ? 'X' : 'O'}]`;
 	}
 }

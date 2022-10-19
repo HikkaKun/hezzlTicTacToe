@@ -1,11 +1,16 @@
 import { Peer, DataConnection } from 'peerjs';
+import { PlayerId } from '../GameModel/Model/Model';
 import { MessageData, ModelEvent } from '../GameModel/Model/ModelEvent';
+import Player from '../GameModel/Player/Player';
+import IView from '../GameModel/View/IView';
+import DoubleArray from '../Utils/DoubleArray';
 import { IVec2 } from '../Utils/IVec2';
 import { randomOnlineId } from '../Utils/Utils';
 
-interface DataType {
-	type: ModelEvent;
-	data: unknown;
+export enum PeerEvent {
+	Click = 'click',
+	Restart = 'restart',
+	Identify = 'identify'
 }
 
 export default class OnlineAdapter {
@@ -21,12 +26,17 @@ export default class OnlineAdapter {
 
 	public static openCallback?: (id: string) => void;
 	public static connectCallback?: () => void;
-	public static onPeerClick?: (position: IVec2) => void;
+
+	public static view: IView | undefined;
+	public static onlinePlayer: Player | undefined;
+	public static onPeerRestartCallback: () => void;
 
 	protected static _setUpConnection(connection: DataConnection): void {
+		this._connection = connection;
+
 		connection.on('open', () => {
 			connection.on('data', (data) => {
-				this.onMessage(data as DataType);
+				this.onMessage(data);
 			})
 
 			connection.send(this.id);
@@ -54,8 +64,20 @@ export default class OnlineAdapter {
 		this._setUpConnection(connection);
 	}
 
-	public static sendMessage(data: DataType): void {
+	public static sendMessageToPeer<T extends ModelEvent>(type: ModelEvent, data: MessageData[T]): void {
+		this._connection && this._connection.send({ type, data });
+	}
 
+	public static sendClickEventToHost(position: IVec2): void {
+		this._connection && this._connection.send({ type: PeerEvent.Click, position });
+	}
+
+	public static sendRestartMessage(): void {
+		this._connection && this._connection.send({ type: PeerEvent.Restart });
+	}
+
+	public static sendIdentifyMessage(id: PlayerId): void {
+		this._connection && this._connection.send({ type: PeerEvent.Identify, data: id });
 	}
 
 	protected static onError(error: Error): void {
@@ -71,7 +93,45 @@ export default class OnlineAdapter {
 		this.openCallback && this.openCallback(id);
 	}
 
-	protected static onMessage({ type, data }: DataType): void {
-		console.log(data);
+	protected static onMessage(message: any): void {
+		console.log('Received message:', message);
+		if (!this.view && !this.onlinePlayer) return;
+
+		const type = message.type as ModelEvent | PeerEvent;
+		const data = message.data;
+
+		switch (type) {
+			case ModelEvent.Init:
+				const double = new DoubleArray<PlayerId>(data.size, data.size);
+				const array = data.array._array;
+				double.forEach((value, position) => {
+					const { x, y } = position;
+
+					if (array[x][y] != null) {
+						double.setAt(position, array[x][y]);
+					}
+				});
+
+				this.view && this.view.onInit({ size: data.size, array: double });
+				break;
+			case ModelEvent.UpdateCell:
+				this.view && this.view.onUpdateCell(data as MessageData[ModelEvent.UpdateCell]);
+				break;
+			case ModelEvent.IncreaseField:
+				this.view && this.view.onIncreaseField(data as MessageData[ModelEvent.IncreaseField]);
+				break;
+			case ModelEvent.Win:
+				this.view && this.view.onWin(data as MessageData[ModelEvent.Win]);
+				break;
+			case PeerEvent.Click:
+				this.onlinePlayer && this.onlinePlayer.clickOnCell(message.position);
+				break;
+			case PeerEvent.Restart:
+				this.onPeerRestartCallback && this.onPeerRestartCallback();
+				break;
+			case PeerEvent.Identify:
+				this.view && this.view.onIdentify(data);
+				break;
+		}
 	}
 }

@@ -151,6 +151,11 @@ export default class Menu extends Phaser.Scene {
 				this.inputForm.setVisible(false);
 				toggleButtonsFancy(this, this.multiplayerElements, false, () => gameCreator.createGame(this.field));
 			} else {
+				OnlineAdapter.view = this.field;
+				this.field.cellPressCallback = (x, y) => OnlineAdapter.sendClickEventToHost({ x, y });
+
+				this.field.restartCallback = () => OnlineAdapter.sendRestartMessage();
+
 				this.inputForm.setVisible(false);
 				toggleButtonsFancy(this, this.multiplayerElements, false);
 			}

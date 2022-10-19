@@ -1,3 +1,4 @@
+import { PlayerId } from '../Model/Model';
 import { MessageData, ModelEvent } from '../Model/ModelEvent';
 
 export default interface IView {
@@ -11,4 +12,5 @@ export default interface IView {
 	onUpdateCell(data: MessageData[ModelEvent.UpdateCell]): void;
 	onIncreaseField(data?: MessageData[ModelEvent.IncreaseField]): void;
 	onWin(data: MessageData[ModelEvent.Win]): void;
+	onIdentify(data: PlayerId): void;
 }
