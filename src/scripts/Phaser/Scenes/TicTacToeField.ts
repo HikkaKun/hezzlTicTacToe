@@ -224,6 +224,8 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 	}
 
 	public onWin({ winPlayerId, winLine }: MessageData[ModelEvent.Win]): void {
+		this.currentPlayerText.text = `Turn of [${winPlayerId == PlayerId.Cross ? 'X' : 'O'}]`;
+
 		const winCells = this.cells
 			.filter(cell => winLine.find((pos) => (pos.x == cell.fieldX && pos.y == cell.fieldY)))
 			.sort((a, b) => a.fieldX - b.fieldX == 0 ? a.fieldY - b.fieldY : a.fieldX - b.fieldX);

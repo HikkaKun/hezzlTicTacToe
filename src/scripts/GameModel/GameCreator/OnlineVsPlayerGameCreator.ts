@@ -1,5 +1,5 @@
-import OnlineAdapter from '../../Online/OnlineAdapter';
-import OnlineViewAdapter from '../../Online/OnlineViewAdapter';
+import OnlineAdapter from '../Online/OnlineAdapter';
+import OnlineViewAdapter from '../Online/OnlineViewAdapter';
 import Controller from '../Controller/Controller';
 import Model, { ModelConfig, PlayerId } from '../Model/Model';
 import Player from '../Player/Player';

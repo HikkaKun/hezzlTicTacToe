@@ -4,8 +4,7 @@ import OnlineVsPlayerGameCreator from '../../GameModel/GameCreator/OnlineVsPlaye
 import PlayerVsPlayerGameCreator from '../../GameModel/GameCreator/PlayerVsPlayerGameCreator';
 import { PlayerId } from '../../GameModel/Model/Model';
 import Player from '../../GameModel/Player/Player';
-import OnlineAdapter from '../../Online/OnlineAdapter';
-import OnlineViewAdapter from '../../Online/OnlineViewAdapter';
+import OnlineAdapter from '../../GameModel/Online/OnlineAdapter';
 import { ALPHABET } from '../../Utils/Utils';
 import Button, { addGameButton, toggleButtons, toggleButtonsFancy } from '../GameObjects/Button';
 import { ImageKeys } from '../Keys/ImageKeys';
@@ -14,7 +13,6 @@ import TicTacToeField from './TicTacToeField';
 
 export default class Menu extends Phaser.Scene {
 	public field!: TicTacToeField;
-	public players?: [Player, Player];
 	public elements: Button[] = [];
 	public chooseModeElements: Button[] = [];
 	public multiplayerElements: Button[] = [];
@@ -51,8 +49,8 @@ export default class Menu extends Phaser.Scene {
 			const gameCreator = new PlayerVsPlayerGameCreator();
 
 			this.field.restartCallback = () => gameCreator.restart();
-
-			toggleButtonsFancy(this, this.elements, false, () => this.players = gameCreator.createGame(this.field));
+			this.field.currentPlayerText.setAlpha(1);
+			toggleButtonsFancy(this, this.elements, false, () => gameCreator.createGame(this.field));
 		}, '2 Players');
 
 		const botVsPlayer = addGameButton(this, 320, 270, ImageKeys.Button, () => this.toggleModeMenu(true), 'Singleplayer');
@@ -109,8 +107,8 @@ export default class Menu extends Phaser.Scene {
 
 				gameCreator.restart()
 			};
-
-			toggleButtonsFancy(this, this.chooseModeElements, false, () => this.players = gameCreator.createGame(this.field));
+			this.field.currentPlayerText.setAlpha(0);
+			toggleButtonsFancy(this, this.chooseModeElements, false, () => gameCreator.createGame(this.field));
 		}, text);
 
 		return button;
@@ -149,6 +147,7 @@ export default class Menu extends Phaser.Scene {
 				this.field.restartCallback = () => gameCreator.restart();
 
 				this.inputForm.setVisible(false);
+				this.field.currentPlayerText.setAlpha(1);
 				toggleButtonsFancy(this, this.multiplayerElements, false, () => gameCreator.createGame(this.field));
 			} else {
 				OnlineAdapter.view = this.field;

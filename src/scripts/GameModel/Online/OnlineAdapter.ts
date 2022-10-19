@@ -1,11 +1,11 @@
 import { Peer, DataConnection } from 'peerjs';
-import { PlayerId } from '../GameModel/Model/Model';
-import { MessageData, ModelEvent } from '../GameModel/Model/ModelEvent';
-import Player from '../GameModel/Player/Player';
-import IView from '../GameModel/View/IView';
-import DoubleArray from '../Utils/DoubleArray';
-import { IVec2 } from '../Utils/IVec2';
-import { randomOnlineId } from '../Utils/Utils';
+import { PlayerId } from '../Model/Model';
+import { MessageData, ModelEvent } from '../Model/ModelEvent';
+import Player from '../Player/Player';
+import IView from '../View/IView';
+import DoubleArray from '../../Utils/DoubleArray';
+import { IVec2 } from '../../Utils/IVec2';
+import { randomOnlineId } from '../../Utils/Utils';
 
 export enum PeerEvent {
 	Click = 'click',

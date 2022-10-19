@@ -1,8 +1,8 @@
-import { PlayerId } from '../GameModel/Model/Model';
-import { ModelEvent } from '../GameModel/Model/ModelEvent';
-import IView from '../GameModel/View/IView';
-import DoubleArray from '../Utils/DoubleArray';
-import { IVec2 } from '../Utils/IVec2';
+import { PlayerId } from '../Model/Model';
+import { ModelEvent } from '../Model/ModelEvent';
+import IView from '../View/IView';
+import DoubleArray from '../../Utils/DoubleArray';
+import { IVec2 } from '../../Utils/IVec2';
 import OnlineAdapter from './OnlineAdapter';
 
 export default class OnlineViewAdapter implements IView {
