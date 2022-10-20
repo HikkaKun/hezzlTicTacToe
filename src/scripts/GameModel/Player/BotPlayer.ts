@@ -86,6 +86,39 @@ export default class BotPlayer extends Player {
 		return priority;
 	}
 
+	protected _getAdditionalEnemyPriority(array: DoubleArray<PlayerId>): DoubleArray<number> {
+		const result = new DoubleArray<number>(array.width, array.height);
+
+		array.forEach((id, position) => {
+			if (id != undefined) {
+				result.setAt(position, 0);
+			}
+
+			for (let x = -1; x <= 1; x++) {
+				for (let y = -1; y <= 1; y++) {
+					if (x == 0 && y == 0) continue;
+					const data = this._checkLine(array, { x: position.x, y: position.y }, { x, y }, this.id == PlayerId.Cross ? PlayerId.Circle : PlayerId.Cross, id);
+
+					if (data.priority != undefined && data.possibleLength == this.lineLength) {
+						const newPos = { x: position.x, y: position.y };
+
+						for (let i = 0; i < this.lineLength; i++) {
+							if (array.getAt(newPos) == undefined) {
+								const priority = result.getAt(newPos) == undefined ? 0 : result.getAt(newPos);
+								result.setAt(newPos, priority! + 1 + (data as Data).priority);
+							}
+
+							newPos.x += x;
+							newPos.y += y;
+						}
+					}
+				}
+			}
+		});
+
+		return result;
+	}
+
 	public clickOnCell(): void {
 		const field = this._controller.getFieldData();
 
@@ -105,13 +138,15 @@ export default class BotPlayer extends Player {
 		} else {
 			let maxPriority = -1;
 
+			const enemyPriority = this._getAdditionalEnemyPriority(field);
+
 			const priorityEmpty = all
 				.map((position) => {
 					let priority = 0;
 					const result = this._getPriority(field, position);
 
 					if (typeof result == 'number') {
-						priority = result;
+						priority = Math.log2(result) + enemyPriority.getAt(position)! * 1.5;
 					} else {
 						super.clickOnCell(result);
 					}
