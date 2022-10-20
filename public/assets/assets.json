@@ -23,5 +23,10 @@
 		"type": "html",
 		"key": "textbox",
 		"url": "html/textbox.html"
+	},
+	{
+		"type": "json",
+		"key": "modelConfig",
+		"url": "configs/modelConfig.json"
 	}
 ]

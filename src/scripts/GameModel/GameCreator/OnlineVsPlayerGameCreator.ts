@@ -11,9 +11,11 @@ export default class OnlineVsPlayerGameCreator extends GameCreator {
 	protected _hostIndex?: number;
 	protected _view?: IView;
 	protected _onlineView?: IView;
+	protected _config?: ModelConfig;
 
 	public createGame(view: IView, config?: ModelConfig | undefined): [Player, Player] {
-		const model = new Model(config);
+		this._config = this._config ?? config;
+		const model = new Model(this._config);
 		const controller = new Controller(model);
 		const players: [Player, Player] = this._players ?? [new Player(PlayerId.Cross, controller), new Player(PlayerId.Circle, controller)];
 

@@ -2,7 +2,7 @@ import 'phaser';
 import BotVsPlayerGameCreator from '../../GameModel/GameCreator/BotVsPlayerGameCreator';
 import OnlineVsPlayerGameCreator from '../../GameModel/GameCreator/OnlineVsPlayerGameCreator';
 import PlayerVsPlayerGameCreator from '../../GameModel/GameCreator/PlayerVsPlayerGameCreator';
-import { PlayerId } from '../../GameModel/Model/Model';
+import { ModelConfig, PlayerId } from '../../GameModel/Model/Model';
 import Player from '../../GameModel/Player/Player';
 import OnlineAdapter from '../../GameModel/Online/OnlineAdapter';
 import { ALPHABET } from '../../Utils/Utils';
@@ -10,6 +10,7 @@ import Button, { addGameButton, toggleButtons, toggleButtonsFancy } from '../Gam
 import { ImageKeys } from '../Keys/ImageKeys';
 import { SceneKeys } from './SceneKeys';
 import TicTacToeField from './TicTacToeField';
+import { JsonKeys } from '../Keys/JsonKeys';
 
 export default class Menu extends Phaser.Scene {
 	public field!: TicTacToeField;
@@ -17,6 +18,7 @@ export default class Menu extends Phaser.Scene {
 	public chooseModeElements: Button[] = [];
 	public multiplayerElements: Button[] = [];
 	public connectButton!: Button;
+	public config!: ModelConfig;
 
 	public inputForm!: Phaser.GameObjects.DOMElement;
 	public textbox!: HTMLInputElement;
@@ -30,6 +32,8 @@ export default class Menu extends Phaser.Scene {
 	}
 
 	public create(): void {
+		this.config = this.cache.json.get(JsonKeys.ModelConfig);
+
 		this.field = this.scene.add(SceneKeys.TicTacToeField, TicTacToeField, true, { xOffset: 320, yOffset: 320, maxFieldSize: 320 }) as TicTacToeField;
 		this.field.offCallback = () => {
 			toggleButtonsFancy(this, this.elements, true);
@@ -50,7 +54,7 @@ export default class Menu extends Phaser.Scene {
 
 			this.field.restartCallback = () => gameCreator.restart();
 			this.field.currentPlayerText.setAlpha(1);
-			toggleButtonsFancy(this, this.elements, false, () => gameCreator.createGame(this.field));
+			toggleButtonsFancy(this, this.elements, false, () => gameCreator.createGame(this.field, this.config));
 		}, '2 Players');
 
 		const botVsPlayer = addGameButton(this, 320, 270, ImageKeys.Button, () => this.toggleModeMenu(true), 'Singleplayer');
@@ -108,7 +112,7 @@ export default class Menu extends Phaser.Scene {
 				gameCreator.restart()
 			};
 			this.field.currentPlayerText.setAlpha(0);
-			toggleButtonsFancy(this, this.chooseModeElements, false, () => gameCreator.createGame(this.field));
+			toggleButtonsFancy(this, this.chooseModeElements, false, () => gameCreator.createGame(this.field, this.config));
 		}, text);
 
 		return button;
@@ -148,7 +152,7 @@ export default class Menu extends Phaser.Scene {
 
 				this.inputForm.setVisible(false);
 				this.field.currentPlayerText.setAlpha(1);
-				toggleButtonsFancy(this, this.multiplayerElements, false, () => gameCreator.createGame(this.field));
+				toggleButtonsFancy(this, this.multiplayerElements, false, () => gameCreator.createGame(this.field, this.config));
 			} else {
 				OnlineAdapter.view = this.field;
 				this.field.cellPressCallback = (x, y) => OnlineAdapter.sendClickEventToHost({ x, y });

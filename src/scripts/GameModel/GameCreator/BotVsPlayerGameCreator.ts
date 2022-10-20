@@ -6,10 +6,10 @@ import IView from '../View/IView';
 import GameCreator from './GameCreator';
 
 export default class BotVsPlayerGameCreator extends GameCreator {
-	private _view?: IView;
-	private _config?: ModelConfig;
-	private _players?: [Player, Player];
-	private _isPlayerFirst?: boolean;
+	protected _view?: IView;
+	protected _config?: ModelConfig;
+	protected _players?: [Player, Player];
+	protected _isPlayerFirst?: boolean;
 
 	/**
 	 * Sets the turn order of the player.
@@ -39,7 +39,8 @@ export default class BotVsPlayerGameCreator extends GameCreator {
 	}
 
 	public createGame(view: IView, config?: ModelConfig): [Player, Player] {
-		const model = new Model(config);
+		this._config = this._config ?? config;
+		const model = new Model(this._config);
 		const controller = new Controller(model);
 
 		const isPlayerFirst = this._isPlayerFirst ?? Math.random() < 0.5;
@@ -79,13 +80,12 @@ export default class BotVsPlayerGameCreator extends GameCreator {
 
 		this._players = players;
 		this._view = view;
-		this._config = config;
 		this._isPlayerFirst = isPlayerFirst
 
 		return players;
 	}
 
 	public restart(): void {
-		this._view && this.createGame(this._view, this._config);
+		this._view && this.createGame(this._view);
 	}
 }

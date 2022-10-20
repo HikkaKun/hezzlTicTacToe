@@ -10,7 +10,8 @@ export default class PlayerVsPlayerGameCreator extends GameCreator {
 	private _players?: [Player, Player];
 
 	public createGame(view: IView, config?: ModelConfig): [Player, Player] {
-		const model = new Model(config);
+		this._config = this._config ?? config;
+		const model = new Model(this._config);
 		const controller = new Controller(model);
 		const players: [Player, Player] = this._players ?? [new Player(PlayerId.Cross, controller), new Player(PlayerId.Circle, controller)];
 
@@ -28,12 +29,11 @@ export default class PlayerVsPlayerGameCreator extends GameCreator {
 
 		this._players = players;
 		this._view = view;
-		this._config = config;
 
 		return players;
 	}
 
 	public restart(): void {
-		this._view && this.createGame(this._view, this._config);
+		this._view && this.createGame(this._view);
 	}
 }

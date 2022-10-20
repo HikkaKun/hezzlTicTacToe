@@ -13,6 +13,9 @@ interface Data {
 export default class BotPlayer extends Player {
 	public lineLength = 3;
 
+	protected _myCritical?: IVec2;
+	protected _otherCritical?: IVec2;
+
 	constructor(id: PlayerId, controller: Controller) {
 		super(id, controller);
 	}
@@ -54,7 +57,7 @@ export default class BotPlayer extends Player {
 		return { priority, possibleLength: i };
 	}
 
-	protected _getPriority(array: DoubleArray<PlayerId>, position: IVec2): number | IVec2 {
+	protected _getPriority(array: DoubleArray<PlayerId>, position: IVec2): number {
 		let priority = 0;
 
 		for (let x = -1; x <= 1; x++) {
@@ -67,8 +70,10 @@ export default class BotPlayer extends Player {
 					priority += (myIdData as Data).priority;
 					priority += (myIdData as Data).possibleLength == this.lineLength ? 1 : 0;
 				} else {
-					return myIdData as IVec2;
+					if (array.getAt(myIdData as IVec2) == undefined && !this._myCritical)
+						this._myCritical = myIdData as IVec2;
 				}
+
 				const value = array.getAt(position);
 				const otherIdData = this._checkLine(array, { x: position.x, y: position.y }, { x, y }, this.id == PlayerId.Cross ? PlayerId.Circle : PlayerId.Cross, value);
 
@@ -78,7 +83,8 @@ export default class BotPlayer extends Player {
 						priority += (otherIdData as Data).possibleLength == this.lineLength ? 1 : 0;
 					}
 				} else {
-					return otherIdData as IVec2;
+					if (array.getAt(otherIdData as IVec2) == undefined && !this._otherCritical)
+						this._otherCritical = otherIdData as IVec2;
 				}
 			}
 		}
@@ -120,6 +126,9 @@ export default class BotPlayer extends Player {
 	}
 
 	public clickOnCell(): void {
+		this._myCritical = undefined;
+		this._otherCritical = undefined;
+
 		const field = this._controller.getFieldData();
 
 		const empty: IVec2[] = [];
@@ -137,7 +146,6 @@ export default class BotPlayer extends Player {
 			super.clickOnCell({ x: field.width >> 1, y: field.height >> 1 });
 		} else {
 			let maxPriority = -1;
-
 			const enemyPriority = this._getAdditionalEnemyPriority(field);
 
 			const priorityEmpty = all
@@ -147,8 +155,6 @@ export default class BotPlayer extends Player {
 
 					if (typeof result == 'number') {
 						priority = Math.log2(result) + enemyPriority.getAt(position)! * 1.5;
-					} else {
-						super.clickOnCell(result);
 					}
 
 					if (priority > maxPriority) {
@@ -161,7 +167,7 @@ export default class BotPlayer extends Player {
 
 			const randomPosition = randomElementFromArray(priorityEmpty).position;
 
-			super.clickOnCell(randomPosition);
+			super.clickOnCell(this._myCritical ?? this._otherCritical ?? randomPosition);
 		}
 	}
 }

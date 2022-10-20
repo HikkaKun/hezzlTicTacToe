@@ -1,0 +1,5 @@
+{
+	"initialSize": 3,
+	"lineLengthToWin": 3,
+	"increasePercent": 0.7
+}
