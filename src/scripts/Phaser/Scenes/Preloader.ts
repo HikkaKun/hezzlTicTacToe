@@ -19,7 +19,15 @@ export default class Preloader extends Phaser.Scene {
 	protected _loaderCompleted = false;
 
 	constructor() {
-		super(SceneKeys.Preloader);
+		super({
+			key: SceneKeys.Preloader,
+			pack: {
+				"files": [
+					{ type: "json", key: 'assets', url: "assets/assets.json" },
+					{ type: "json", key: 'customAssets', url: "assets/customAssets.json" }
+				]
+			}
+		});
 	}
 
 	public async loadFont(name: string, url: string): Promise<void> {
@@ -30,21 +38,10 @@ export default class Preloader extends Phaser.Scene {
 	}
 
 	public preload(): void {
-		this.load.json('assets', 'assets/assets.json');
-		this.load.json('customAssets', 'assets/customAssets.json');
-	}
-
-	public create(): void {
 		const assets: Asset[] = this.cache.json.get('assets');
 		const customAssets: CustomAsset[] = this.cache.json.get('customAssets');
 
 		assets.forEach((asset: Asset) => this.load[asset.type](asset.key, 'assets/' + asset.url));
-
-		this.load.start();
-		this.load.addListener(Phaser.Loader.Events.COMPLETE, () => {
-			this._loaderCompleted = true;
-			this.checkIfComplete();
-		});
 
 		Promise.all(customAssets.map((asset: CustomAsset) => {
 			switch (asset.type) {
@@ -57,7 +54,12 @@ export default class Preloader extends Phaser.Scene {
 		});
 	}
 
-	public checkIfComplete() {
+	public create(): void {
+		this._loaderCompleted = true;
+		this.checkIfComplete();
+	}
+
+	public checkIfComplete(): void {
 		if (this._customCompleted && this._loaderCompleted)
 			this.scene.start(SceneKeys.Menu);
 	}

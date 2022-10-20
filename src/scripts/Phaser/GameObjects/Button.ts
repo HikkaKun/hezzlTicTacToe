@@ -1,3 +1,5 @@
+import { FontKeys } from '../Keys/FontKeys';
+
 export function addGameButton(scene: Phaser.Scene, x: number, y: number, image: string | Phaser.Textures.Texture, callback: () => void, text?: string): Button {
 	const button = new Button(scene, x, y);
 	button.init(image, callback, text);
@@ -65,7 +67,7 @@ export default class Button extends Phaser.GameObjects.Container {
 
 		if (!textString) return;
 
-		const text = this.scene.add.text(0, 0, textString, { fontFamily: 'monogram', fontSize: "32px", });
+		const text = this.scene.add.text(0, 0, textString, { fontFamily: FontKeys.Monogram, fontSize: "32px", });
 		this.add(text);
 		this.text = text;
 

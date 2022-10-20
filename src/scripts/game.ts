@@ -8,8 +8,8 @@ const config: Phaser.Types.Core.GameConfig = {
 	height: 640,
 	parent: 'phaser-dom',
 	scale: {
-		// mode: Phaser.Scale.FIT,
-		// autoCenter: Phaser.Scale.CENTER_BOTH
+		mode: Phaser.Scale.FIT,
+		autoCenter: Phaser.Scale.CENTER_BOTH
 	},
 	dom: {
 		createContainer: true

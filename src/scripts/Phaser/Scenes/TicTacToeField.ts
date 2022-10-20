@@ -8,6 +8,7 @@ import { PlayerId } from '../../GameModel/Model/Model';
 import { MessageData, ModelEvent } from '../../GameModel/Model/ModelEvent';
 import Button, { addGameButton, toggleButtons, toggleButtonsFancy } from '../GameObjects/Button';
 import { ImageKeys } from '../Keys/ImageKeys';
+import { FontKeys } from '../Keys/FontKeys';
 
 export interface TicTacToeFieldInitData {
 	controller: Controller;
@@ -104,8 +105,8 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 		const back = addGameButton(this, 320, 320 + this._maxFieldSize / 2 + 80, ImageKeys.Button, () => this.off(), 'Back');
 
-		this.currentPlayerText = this.add.text(320, 120, 'Turn of []', { fontFamily: 'monogram', fontSize: "32px" }).setOrigin(0.5).setVisible(false);
-		this.multiplayerIdentifier = this.add.text(320, 95, 'You are []', { fontFamily: 'monogram', fontSize: "32px" }).setOrigin(0.5).setVisible(false);
+		this.currentPlayerText = this.add.text(320, 120, 'Turn of []', { fontFamily: FontKeys.Monogram, fontSize: "32px" }).setOrigin(0.5).setVisible(false);
+		this.multiplayerIdentifier = this.add.text(320, 95, 'You are []', { fontFamily: FontKeys.Monogram, fontSize: "32px" }).setOrigin(0.5).setVisible(false);
 
 		this.buttons.push(restart, back);
 		toggleButtons(this.buttons, false);
@@ -239,8 +240,8 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 
 		this.tweens.addCounter({
 			from: 255,
-			to: 200,
-			duration: 500,
+			to: 150,
+			duration: 250,
 			onUpdate: (tween) => {
 				for (const cell of otherCells) {
 					const value = Math.floor(tween.getValue());
@@ -253,7 +254,7 @@ export default class TicTacToeField extends Phaser.Scene implements IView {
 			targets: winCells,
 			y: '-=' + this.cellSize / 2,
 			duration: 500,
-			delay: (target: Cell) => winCells.indexOf(target) * 100,
+			delay: (target: Cell) => 250 + winCells.indexOf(target) * 100,
 			ease: Phaser.Math.Easing.Sine.Out,
 			yoyo: true,
 		});
