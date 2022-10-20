@@ -59,9 +59,11 @@ export default class BotVsPlayerGameCreator extends GameCreator {
 
 		controller.setPlayerIds([players[0].id, players[1].id]);
 
+		const human = players[isPlayerFirst ? 0 : 1];
+		const bot = players[isPlayerFirst ? 1 : 0] as BotPlayer;
+		bot.lineLength = bot.lineLength ?? config?.lineLengthToWin
+
 		view.cellPressCallback = (x: number, y: number) => {
-			const human = players[isPlayerFirst ? 0 : 1];
-			const bot = players[isPlayerFirst ? 1 : 0];
 
 			if (controller.checkCurrentPlayer(human.id)) {
 				controller.onCellClick({ x, y }, human.id);
