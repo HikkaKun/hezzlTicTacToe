@@ -3,7 +3,6 @@ import BotVsPlayerGameCreator from '../../GameModel/GameCreator/BotVsPlayerGameC
 import OnlineVsPlayerGameCreator from '../../GameModel/GameCreator/OnlineVsPlayerGameCreator';
 import PlayerVsPlayerGameCreator from '../../GameModel/GameCreator/PlayerVsPlayerGameCreator';
 import { ModelConfig, PlayerId } from '../../GameModel/Model/Model';
-import Player from '../../GameModel/Player/Player';
 import OnlineAdapter from '../../GameModel/Online/OnlineAdapter';
 import { ALPHABET } from '../../Utils/Utils';
 import Button, { addGameButton, toggleButtons, toggleButtonsFancy } from '../GameObjects/Button';
@@ -39,13 +38,54 @@ export default class Menu extends Phaser.Scene {
 			toggleButtonsFancy(this, this.elements, true);
 		}
 
-
+		this.createBackground();
 		this.createMainMenu();
 		this.createBotModeMenu();
 		this.createMultiplayerMenu();
 
 		toggleButtons(this.chooseModeElements, false);
 		toggleButtons(this.multiplayerElements, false);
+	}
+
+	public createBackground(): void {
+		const graphics = new Phaser.GameObjects.Graphics(this);
+
+		graphics.fillStyle(0xffffff, 1);
+		graphics.fillRect(0, 0, 640, 640);
+
+		graphics.generateTexture('menu-background');
+
+		const background = this.add.image(0, 0, 'menu-background').setOrigin(0);
+
+		function getTint(value: number) {
+			const baseColor = Phaser.Display.Color.HexStringToColor('0087FF');
+			const secondColor = Phaser.Display.Color.HexStringToColor('7000FF')
+
+			const interpolated = Phaser.Display.Color.Interpolate.ColorWithColor(
+				baseColor,
+				secondColor,
+				255,
+				value * 100
+			);
+
+			return Phaser.Display.Color.ObjectToColor(interpolated).color;
+		}
+
+		const randomCounter = (callback: (tween: Phaser.Tweens.Tween) => void) => {
+			return this.tweens.addCounter({
+				from: 0,
+				to: 1,
+				duration: 1000 + Math.random() * 1000,
+				yoyo: true,
+				repeat: -1,
+				onUpdate: callback
+			});
+		}
+
+		randomCounter(function (tween) { background.tintTopLeft = getTint(tween.getValue()) });
+		randomCounter(function (tween) { background.tintTopRight = getTint(tween.getValue()) });
+		randomCounter(function (tween) { background.tintBottomLeft = getTint(tween.getValue()) });
+		randomCounter(function (tween) { background.tintBottomRight = getTint(tween.getValue()) });
 	}
 
 	public createMainMenu(): void {

@@ -38,7 +38,6 @@ export default class Cell extends Phaser.GameObjects.Container {
 	}
 
 	public setCellSize(size: number): void {
-
 		this.border.setDisplaySize(size, size);
 		this.cross.setDisplaySize(size * 0.8, size * 0.8);
 		this.circle.setDisplaySize(size * 0.8, size * 0.8);
@@ -49,16 +48,43 @@ export default class Cell extends Phaser.GameObjects.Container {
 	public setCross(): void {
 		this.circle.setAlpha(0);
 		this.cross.setAlpha(1);
+
+		this.cross.scale = 0;
+		this.cross.angle = 180;
+
+		this.scene.tweens.add({
+			targets: this.cross,
+			scale: this.border.scale * 0.8,
+			angle: '+=180',
+			duration: 1000,
+			ease: Phaser.Math.Easing.Back.Out,
+			onUpdate: (tween) => {
+				tween.updateTo('scale', this.border.scale * 0.8);
+			}
+		})
 	}
 
 	public setCircle(): void {
 		this.circle.setAlpha(1);
 		this.cross.setAlpha(0);
+
+		this.circle.scale = 0;
+
+		this.scene.tweens.add({
+			targets: this.circle,
+			scale: 0.8,
+			duration: 1000,
+			ease: Phaser.Math.Easing.Back.Out,
+			onUpdate: (tween) => {
+				tween.updateTo('scale', this.border.scale * 0.8);
+			}
+		})
 	}
 
 	public setTint(value: number): void {
-		for (const chlid of this.list) {
-			(<Phaser.GameObjects.Image>chlid).setTint(value);
+		for (const child of this.list) {
+			if (child instanceof Phaser.GameObjects.Image)
+				child.setTint(value);
 		}
 	}
 }

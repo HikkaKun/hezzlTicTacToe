@@ -17,7 +17,11 @@
 	{
 		"type": "svg",
 		"key": "circle",
-		"url": "images/circle-regular.svg"
+		"url": "images/circle-regular.svg",
+		"settings": {
+			"width": 94,
+			"height": 94
+		}
 	},
 	{
 		"type": "html",

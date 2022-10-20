@@ -6,6 +6,7 @@ interface Asset {
 	type: 'json' | 'image' | 'svg' | 'html';
 	key: ImageKeys;
 	url: string;
+	settings: any;
 }
 
 interface CustomAsset {
@@ -41,7 +42,8 @@ export default class Preloader extends Phaser.Scene {
 		const assets: Asset[] = this.cache.json.get('assets');
 		const customAssets: CustomAsset[] = this.cache.json.get('customAssets');
 
-		assets.forEach((asset: Asset) => this.load[asset.type](asset.key, 'assets/' + asset.url));
+		assets.forEach((asset: Asset) => this.load[asset.type](asset.key, 'assets/' + asset.url, asset?.settings));
+		this.load.image('a', 'a',)
 
 		Promise.all(customAssets.map((asset: CustomAsset) => {
 			switch (asset.type) {
